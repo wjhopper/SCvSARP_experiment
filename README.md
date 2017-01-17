@@ -1,2 +1,2 @@
-# PTB-boilerplate
-A basic template to build Psychtoolbox experiments on top of
+# FAM-SARP
+Forgetting and Memory: Semantic Associate Retrieval Practice Experiment
