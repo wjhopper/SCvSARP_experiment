@@ -4,7 +4,8 @@ CREATE DATABASE FAM_SARP;
 CREATE TABLE participants (
   subject smallserial NOT NULL,
   email character varying(40) UNIQUE NOT NULL,
-  sessions_completed smallint,
+  sessions_completed smallint NOT NULL,
+  rng_seed integer NOT NULL,
   PRIMARY KEY(subject)
 );
 
