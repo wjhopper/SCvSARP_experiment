@@ -22,3 +22,10 @@ CREATE TABLE stimuli (
 
 COPY stimuli(target, semantic_cue_1, semantic_cue_2, semantic_cue_3, episodic_cue)
 FROM 'C:\Users\will\source\FAM_SARP_experiment\db\stimuli_table.csv' DELIMITER ',' CSV HEADER;
+
+CREATE ROLE will LOGIN;
+GRANT ALL PRIVILEGES ON DATABASE "fam_sarp" TO will;
+GRANT ALL PRIVILEGES ON SCHEMA public TO will;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO will;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO will;
+GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO will;
