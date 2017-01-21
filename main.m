@@ -4,8 +4,8 @@ exit_stat = 1; %#ok<NASGU> assume that we exited badly if ever exit before this 
 % use the inputParser class to deal with arguments
 ip = inputParser;
 %#ok<*NVREPL> dont warn about addParamValue
-addParamValue(ip,'subject', 0, @isnumeric);
-addParamValue(ip,'group', 1, @is.numeric);
+addParamValue(ip,'email', 'will@fake.com', @validate_email);
+addParamValue(ip,'session', 1, @(x) x <= 4);% Assuming 4 is the maximum number of sessions
 addParamValue(ip,'debugLevel',1, @isnumeric);
 parse(ip,varargin{:}); 
 input = ip.Results;
@@ -134,4 +134,8 @@ function [window, constants] = windowSetup(constants, input)
         psychrethrow(psychlasterror);
         windowCleanup(constants)
     end
+end
+
+function valid_email = validate_email(email_address)
+    valid_email = ~isempty(regexpi(email_address, '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'));
 end
