@@ -146,6 +146,12 @@ function [window, constants] = windowSetup(constants, input)
     end
 end
 
-function valid_email = validate_email(email_address)
+function [valid_email, msg] = validate_email(email_address, ~)
     valid_email = ~isempty(regexpi(email_address, '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'));
+    if ~valid_email
+        msg = 'Invalid E-Mail Address';
+    else
+        msg = '';
+    end
+
 end
