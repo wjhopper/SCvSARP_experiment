@@ -17,8 +17,8 @@ rng('shuffle'); % set up and seed the randon number generator, so lists get prop
 
 % Get full path to the directory the function lives in, and add it to the path
 constants.root_dir = fileparts(mfilename('fullpath'));
-constants.lib_dir = fullfile(constants.root_dir, 'lib');
 path(path,constants.root_dir);
+constants.lib_dir = fullfile(constants.root_dir, 'lib');
 path(path, genpath(constants.lib_dir));
 
 % Make the data directory if it doesn't exist (but it should!)
@@ -27,11 +27,21 @@ if ~exist(fullfile(constants.root_dir, 'data'), 'dir')
 end
 
 % Define the location of some directories we might want to use
-constants.stimDir=fullfile(constants.root_dir,'stimuli');
+constants.stimDir=fullfile(constants.root_dir,'db');
 constants.savePath=fullfile(constants.root_dir,'data');
 
 % instantiate the subject number validator function
 subjectValidator = makeSubjectDataChecker(constants.savePath, '.csv', input.debugLevel);
+
+%% Connect to the database
+
+setdbprefs('DataReturnFormat', 'dataset'); % Retrieved data should be a dataset object
+setdbprefs('ErrorHandling', 'report'); % Throw runtime errors when a db error occurs
+% instance must be a predefined datasource at the OS level
+db_conn = database.ODBCConnection('fam_sarp', 'will', ''); % Connect to the db
+% When cleanupObj is destroyed, it will execute the close(db_conn) statement
+% This ensures we don't leave open db connections lying around somehow
+cleanupObj = onCleanup(@() close(db_conn)); 
 
 %% -------- GUI input option ----------------------------------------------------
 % If any input was not given, ask for it!
