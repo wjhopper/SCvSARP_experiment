@@ -5,7 +5,7 @@ exit_stat = 1; %#ok<NASGU> assume that we exited badly if ever exit before this 
 ip = inputParser;
 %#ok<*NVREPL> dont warn about addParamValue
 addParamValue(ip,'email', 'will@fake.com', @validate_email);
-addParamValue(ip,'session', 1, @(x) x <= 4);% Assuming 4 is the maximum number of sessions
+addParamValue(ip,'sessions_completed', 0, @(x) x <= 4);% Assuming 4 is the maximum number of sessions
 addParamValue(ip,'debugLevel',1, @isnumeric);
 parse(ip,varargin{:}); 
 input = ip.Results;
@@ -54,19 +54,35 @@ cleanupObj = onCleanup(@() close(db_conn));
 % list of input parameters while may be exposed to the gui
 % any input parameters not listed here will ONLY be able to be set via the
 % command line
-expose = {'email'}; 
-if any(ismember(defaults, expose))
-% call gui for input
-    guiInput = getSubjectInfo('email', struct('title', 'E-Mail', ...
-                                               'type', 'textinput', ...
-                                               'validationFcn', @validate_email));
-    if isempty(guiInput)
-        exit(exit_code);
-    else       
-       input = filterStructs(guiInput,input);
+expose = {'email'};
+valid_input = false;
+while ~valid_input
+    if any(ismember(defaults, expose))
+    % call gui for input
+        guiInput = getSubjectInfo('email', struct('title', 'E-Mail', ...
+                                                   'type', 'textinput', ...
+                                                   'validationFcn', @validate_email));
+        if isempty(guiInput)
+            exit(exit_code);
+        else   
+            input = filterStructs(guiInput,input);
+        end
     end
-end
+    
+    session = fetch(exec(db_conn, ...
+                         sprintf('select sessions_completed from participants where email like ''%s''', ...
+                                 input.email)));
+    if strcmp(session.Data, 'No Data')
+        rng('shuffle');
+        rng_state = rng;
+        insert(db_conn, 'participants', ...
+               {'email', 'sessions_completed', 'rng_seed'}, ...
+               {input.email, 0, double(rng_state.Seed)});
+    else
+        input.sessions_completed = session.Data.sessions_completed;
+    end
 
+end
 
 [window, constants] = windowSetup(constants, input);
 

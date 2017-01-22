@@ -5,7 +5,7 @@ CREATE TABLE participants (
   subject smallserial NOT NULL,
   email character varying(40) UNIQUE NOT NULL,
   sessions_completed smallint NOT NULL,
-  rng_seed integer NOT NULL,
+  rng_seed bigint NOT NULL,
   PRIMARY KEY(subject)
 );
 
