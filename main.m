@@ -83,6 +83,7 @@ while ~valid_input
         input.sessions_completed = session.Data.sessions_completed;
     end
 
+    valid_input = true;
 end
 
 [window, constants] = windowSetup(constants, input);
