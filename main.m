@@ -86,6 +86,17 @@ while ~valid_input
     valid_input = true;
 end
 
+if input.sessions_completed == 0
+
+    try
+        stimuli = fetch(exec(db_conn, 'select * from stimuli'));
+    catch db_error
+       database_error(db_error)
+    end
+
+    stimuli = create_lists(stimuli.Data, 18);
+end
+    
 [window, constants] = windowSetup(constants, input);
 
 %% end of the experiment %%
