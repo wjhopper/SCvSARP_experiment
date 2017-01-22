@@ -210,10 +210,10 @@ errorGeneric = '\nFeild ''%s'' is missing a value for the required property ''%s
                 current, 'values');
         %  If its a checkbox with no value given, use zero
         elseif strcmp('check', guiFields.(current).type) && ~isfield(guiFields.(current), 'values')
-            guiFields.(current).values = [];
+            guiFields.(current).values = 0;
         %  If its a text input box with no value given, use an empty string         
         elseif strcmp('textinput', guiFields.(current).type) && ~isfield(guiFields.(current), 'values')
-            guiFields.(current).values = 0;            
+            guiFields.(current).values = '';            
         end
 
         % if no validation function is given, use a dummy function that
