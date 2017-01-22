@@ -13,10 +13,10 @@ CREATE TABLE participants (
 CREATE TABLE stimuli (
   id smallserial NOT NULL,
   target character varying(12) NOT NULL,
-  semantic_cue_1 character varying(12) NOT NULL,
-  semantic_cue_2 character varying(12) NOT NULL,
-  semantic_cue_3 character varying(12) NOT NULL,
-  episodic_cue character varying(12) NOT NULL,
+  semantic_cue_1 character varying(12) UNIQUE NOT NULL,
+  semantic_cue_2 character varying(12) UNIQUE NOT NULL,
+  semantic_cue_3 character varying(12) UNIQUE NOT NULL,
+  episodic_cue character varying(12) UNIQUE NOT NULL,
   PRIMARY KEY(target)
 );
 
