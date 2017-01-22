@@ -30,9 +30,6 @@ end
 constants.stimDir=fullfile(constants.root_dir,'db');
 constants.savePath=fullfile(constants.root_dir,'data');
 
-% instantiate the subject number validator function
-subjectValidator = makeSubjectDataChecker(constants.savePath, '.csv', input.debugLevel);
-
 %% Connect to the database
 
 setdbprefs('DataReturnFormat', 'dataset'); % Retrieved data should be a dataset object
@@ -44,27 +41,22 @@ db_conn = database.ODBCConnection('fam_sarp', 'will', ''); % Connect to the db
 cleanupObj = onCleanup(@() close(db_conn)); 
 
 %% -------- GUI input option ----------------------------------------------------
-% If any input was not given, ask for it!
-expose = {'subject', 'group'}; % list of arguments to be exposed to the gui
+% list of input parameters while may be exposed to the gui
+% any input parameters not listed here will ONLY be able to be set via the
+% command line
+expose = {'email'}; 
 if any(ismember(defaults, expose))
 % call gui for input
-    guiInput = getSubjectInfo('subject', struct('title', 'Subject Number', 'type', 'textinput', 'validationFcn', subjectValidator), ...
-        'group', struct('title' ,'Group', 'type', 'dropdown', 'values', {{'immediate','delay'}}));
+    guiInput = getSubjectInfo('email', struct('title', 'E-Mail', ...
+                                               'type', 'textinput', ...
+                                               'validationFcn', @validate_email));
     if isempty(guiInput)
-        exit_stat = 1;
-        return
-    else
-       input = filterStructs(input,guiInput);
-       input.subject = str2double(input.subject); 
+        exit(exit_code);
+    else       
+       input = filterStructs(guiInput,input);
     end
-else
-    [validSubNum, msg] = subjectValidator(input.subject, '.csv', input.debugLevel);
-    assert(validSubNum, msg)
 end
 
-% now that we have all the input and its passed validation, we can have
-% a file path!
-constants.fName=fullfile(constants.savePath, strjoin({'Subject', num2str(input.subject), 'Group',num2str(input.group)},'_'));
 
 [window, constants] = windowSetup(constants, input);
 
@@ -73,7 +65,7 @@ windowCleanup(constants)
 exit_stat=0;
 end % end main()
 
-function overwriteCheck = makeSubjectDataChecker(directory, extension, debugLevel)
+function overwriteCheck = makeSubjectDataChecker(directory, extension, debugLevel) %#ok<DEFNU>
     % makeSubjectDataChecker function closer factory, used for the purpose
     % of enclosing the directory where data will be stored. This way, the
     % function handle it returns can be used as a validation function with getSubjectInfo to 
