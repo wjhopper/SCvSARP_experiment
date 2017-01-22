@@ -34,8 +34,18 @@ constants.savePath=fullfile(constants.root_dir,'data');
 
 setdbprefs('DataReturnFormat', 'dataset'); % Retrieved data should be a dataset object
 setdbprefs('ErrorHandling', 'report'); % Throw runtime errors when a db error occurs
-% instance must be a predefined datasource at the OS level
-db_conn = database.ODBCConnection('fam_sarp', 'will', ''); % Connect to the db
+
+try
+    % instance must be a predefined datasource at the OS level
+    db_conn = database.ODBCConnection('fam_sarp', 'will', ''); % Connect to the db
+catch db_error
+   errordlg({'Unable to connect to database. Specific error was:', ...
+            '', ...
+            db_error.message}, ...
+            'Database Connection Error', ...
+            'modal')
+   rethrow(db_error)
+end
 % When cleanupObj is destroyed, it will execute the close(db_conn) statement
 % This ensures we don't leave open db connections lying around somehow
 cleanupObj = onCleanup(@() close(db_conn)); 
