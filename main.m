@@ -39,12 +39,7 @@ try
     % instance must be a predefined datasource at the OS level
     db_conn = database.ODBCConnection('fam_sarp', 'will', ''); % Connect to the db
 catch db_error
-   errordlg({'Unable to connect to database. Specific error was:', ...
-            '', ...
-            db_error.message}, ...
-            'Database Connection Error', ...
-            'modal')
-   rethrow(db_error)
+   database_error(db_error)
 end
 % When cleanupObj is destroyed, it will execute the close(db_conn) statement
 % This ensures we don't leave open db connections lying around somehow
@@ -68,16 +63,22 @@ while ~valid_input
             input = filterStructs(guiInput,input);
         end
     end
-    
+
     session = fetch(exec(db_conn, ...
                          sprintf('select sessions_completed from participants where email like ''%s''', ...
                                  input.email)));
     if strcmp(session.Data, 'No Data')
+
         rng('shuffle');
         rng_state = rng;
-        insert(db_conn, 'participants', ...
-               {'email', 'sessions_completed', 'rng_seed'}, ...
-               {input.email, 0, double(rng_state.Seed)});
+        try
+            insert(db_conn, 'participants', ...
+                   {'email', 'sessions_completed', 'rng_seed'}, ...
+                   {input.email, 0, double(rng_state.Seed)});
+        catch db_error
+           database_error(db_error)
+        end
+
     else
         input.sessions_completed = session.Data.sessions_completed;
     end
@@ -172,4 +173,13 @@ function [valid_email, msg] = validate_email(email_address, ~)
         msg = '';
     end
 
+end
+
+function [] = database_error(error)
+   errordlg({'Unable to connect to database. Specific error was:', ...
+            '', ...
+            error.message}, ...
+            'Database Connection Error', ...
+            'modal')
+   rethrow(error)
 end
