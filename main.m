@@ -64,10 +64,11 @@ while ~valid_input
         end
     end
 
-    session = fetch(exec(db_conn, ...
-                         sprintf('select sessions_completed from participants where email like ''%s''', ...
-                                 input.email)));
-    if strcmp(session.Data, 'No Data')
+    session = get(fetch(exec(db_conn, ...
+                             sprintf('select * from participants where email like ''%s''', ...
+                                     input.email))), ...
+                  'Data');
+    if strcmp(session, 'No Data')
 
         rng('shuffle');
         rng_state = rng;
@@ -75,28 +76,41 @@ while ~valid_input
             insert(db_conn, 'participants', ...
                    {'email', 'sessions_completed', 'rng_seed'}, ...
                    {input.email, 0, double(rng_state.Seed)});
+           % Retrieve the info the database assigns
+            session = get(fetch(exec(db_conn, ...
+                                     sprintf('select * from participants where email like ''%s''', ...
+                                             input.email))), ...
+                          'Data');
         catch db_error
            database_error(db_error)
         end
-
-    else
-        input.sessions_completed = session.Data.sessions_completed;
     end
 
+    input.sessions_completed = session.sessions_completed;
+    input.subject = session.subject;
     valid_input = true;
 end
 
 if input.sessions_completed == 0
 
     try
-        stimuli = fetch(exec(db_conn, 'select * from stimuli'));
+        stimuli = get(fetch(exec(db_conn, 'select * from stimuli')), 'Data');
     catch db_error
        database_error(db_error)
     end
 
-    stimuli = create_lists(stimuli.Data, 18);
+    lists = create_lists(stimuli, 18);
+    lists.subject = repmat(input.subject, size(lists,1), 1);
+    insert(db_conn, 'lists', ...
+           lists.Properties.VarNames, ...
+           lists);
+else
+    lists = get(fetch(exec(db_conn, ...
+                           sprintf('select * from lists where subject = ''%d''', ...
+                                   input.subject))), ...
+                'Data');
 end
-    
+
 [window, constants] = windowSetup(constants, input);
 
 %% end of the experiment %%

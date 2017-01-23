@@ -30,9 +30,8 @@ function [ stimuli ] =create_lists(raw_stimuli, list_length)
     stimuli.list = repelem(1:n_lists, list_length)';
 
     % Within a list, assign each item to a condition
-    condition_indicators = repelem([conditions{:}], ...
-                                   n_stimuli/n_lists/length(conditions))';
-    stimuli.practice = repmat(char(0), n_stimuli, 1);
+    condition_indicators = repelem(conditions, n_stimuli/n_lists/length(conditions))';
+    stimuli.practice = cell(n_stimuli, 1);
     for i=1:n_lists
         rows = stimuli.list == i;
         stimuli.practice(rows) = condition_indicators(randperm(length(condition_indicators)));

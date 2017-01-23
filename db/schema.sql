@@ -11,7 +11,7 @@ CREATE TABLE participants (
 
 
 CREATE TABLE stimuli (
-  id smallserial NOT NULL,
+  id smallserial UNIQUE NOT NULL,
   target character varying(12) NOT NULL,
   semantic_cue_1 character varying(12) UNIQUE NOT NULL,
   semantic_cue_2 character varying(12) UNIQUE NOT NULL,
@@ -22,6 +22,22 @@ CREATE TABLE stimuli (
 
 COPY stimuli(target, semantic_cue_1, semantic_cue_2, semantic_cue_3, episodic_cue)
 FROM 'C:\Users\will\source\FAM_SARP_experiment\db\stimuli_table.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE lists (
+  subject smallint references participants(subject) NOT NULL,
+  id smallint NOT NULL references stimuli(id),
+  target character varying(12) NOT NULL,
+  semantic_cue_1 character varying(12) NOT NULL,
+  semantic_cue_2 character varying(12) NOT NULL,
+  semantic_cue_3 character varying(12) NOT NULL,
+  episodic_cue character varying(12) NOT NULL,
+  session smallint NOT NULL,
+  list smallint NOT NULL,
+  practice character(1) NOT NULL,
+  PRIMARY KEY(subject, id)
+);
+
+CREATE INDEX ON lists(session);
 
 CREATE ROLE will LOGIN;
 GRANT ALL PRIVILEGES ON DATABASE "fam_sarp" TO will;
