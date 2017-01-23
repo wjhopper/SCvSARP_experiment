@@ -49,6 +49,12 @@ constants.gamebreakCountdown = 5;
 assert(mod(constants.list_length, length(constants.conditions)) == 0, ...
        strcat('List length (', num2str(constants.list_length), ') is not a multiple of 3'));
 
+%% Set the font size for dialog boxes
+old_font_size = get(0, 'DefaultUIControlFontSize');
+set(0, 'DefaultUIControlFontSize', 14);
+old_image_visiblity = get(0,'DefaultImageVisible');
+set(0,'DefaultImageVisible','off')
+
 %% Connect to the database
 
 setdbprefs('DataReturnFormat', 'dataset'); % Retrieved data should be a dataset object
@@ -62,7 +68,7 @@ catch db_error
 end
 % When cleanupObj is destroyed, it will execute the close(db_conn) statement
 % This ensures we don't leave open db connections lying around somehow
-cleanupObj = onCleanup(@() close(db_conn)); 
+cleanupObj = onCleanup(@() on_exit_function(db_conn,old_font_size,old_image_visiblity));
 
 %% -------- GUI input option ----------------------------------------------------
 % list of input parameters while may be exposed to the gui
@@ -227,4 +233,10 @@ function [] = database_error(error)
             'Database Connection Error', ...
             'modal')
    rethrow(error)
+end
+
+function on_exit_function(db_conn,old_font_size,old_image_visiblity)
+    close(db_conn)
+    set(0, 'DefaultUIControlFontSize', old_font_size);
+    set(0,'DefaultImageVisible', old_image_visiblity)
 end
