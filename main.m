@@ -37,6 +37,16 @@ end
 constants.stimDir=fullfile(constants.root_dir,'db');
 constants.savePath=fullfile(constants.root_dir,'data');
 
+%% Set up the experimental design %%
+constants.list_length = 18;
+constants.practiceCountdown = 3;
+constants.finalTestCountdown = 5;
+constants.finalTestBreakCountdown = 10;
+constants.studyNewListCountdown = 5;
+constants.gamebreakCountdown = 5;
+
+assert(mod(constants.list_length,3), 'List length must be a multiple of 3');
+
 %% Connect to the database
 
 setdbprefs('DataReturnFormat', 'dataset'); % Retrieved data should be a dataset object
