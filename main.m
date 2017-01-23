@@ -7,12 +7,11 @@ if Screen('NominalFrameRate', max(Screen('Screens'))) ~= 60
     return;
 end
 
-
 % use the inputParser class to deal with arguments
 ip = inputParser;
 %#ok<*NVREPL> dont warn about addParamValue
 addParamValue(ip,'email', 'will@fake.com', @validate_email);
-addParamValue(ip,'sessions_completed', 0, @(x) x <= 4);% Assuming 4 is the maximum number of sessions
+addParamValue(ip,'sessions_completed', 0, @(x) x <= 3);% # sessions must be kept in sync with constants.n_sessions
 addParamValue(ip,'debugLevel',1, @isnumeric);
 parse(ip,varargin{:}); 
 input = ip.Results;
@@ -39,13 +38,16 @@ constants.savePath=fullfile(constants.root_dir,'data');
 
 %% Set up the experimental design %%
 constants.list_length = 18;
+constants.conditions = {'S', 'T', 'N'};
+constants.n_sessions = 3;
 constants.practiceCountdown = 3;
 constants.finalTestCountdown = 5;
 constants.finalTestBreakCountdown = 10;
 constants.studyNewListCountdown = 5;
 constants.gamebreakCountdown = 5;
 
-assert(mod(constants.list_length,3), 'List length must be a multiple of 3');
+assert(mod(constants.list_length, length(constants.conditions)) == 0, ...
+       strcat('List length (', num2str(constants.list_length), ') is not a multiple of 3'));
 
 %% Connect to the database
 
@@ -116,7 +118,7 @@ if input.sessions_completed == 0
        database_error(db_error)
     end
 
-    lists = create_lists(stimuli, 18);
+    lists = create_lists(stimuli, constants);
     lists.subject = repmat(input.subject, size(lists,1), 1);
     insert(db_conn, 'lists', ...
            lists.Properties.VarNames, ...
