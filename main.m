@@ -93,30 +93,38 @@ while ~valid_input
                              sprintf('select * from participants where email like ''%s''', ...
                                      input.email))), ...
                   'Data');
+
     if strcmp(session, 'No Data')
-
-        rng('shuffle');
-        rng_state = rng;
-        try
-            insert(db_conn, 'participants', ...
-                   {'email', 'sessions_completed', 'rng_seed'}, ...
-                   {input.email, 0, double(rng_state.Seed)});
-           % Retrieve the info the database assigns
-            session = get(fetch(exec(db_conn, ...
-                                     sprintf('select * from participants where email like ''%s''', ...
-                                             input.email))), ...
-                          'Data');
-        catch db_error
-           database_error(db_error)
+        valid_input = confirmation_dialog(input.email, 0);
+        if valid_input
+            new_subject = true;
+            rng('shuffle');
+            rng_state = rng;
+            try
+                insert(db_conn, 'participants', ...
+                       {'email', 'sessions_completed', 'rng_seed'}, ...
+                       {input.email, 0, double(rng_state.Seed)});
+               % Retrieve the info the database assigns
+                session = get(fetch(exec(db_conn, ...
+                                         sprintf('select * from participants where email like ''%s''', ...
+                                                 input.email))), ...
+                              'Data');
+            catch db_error
+               database_error(db_error)
+            end
         end
-    end
 
-    input.sessions_completed = session.sessions_completed;
-    input.subject = session.subject;
-    valid_input = true;
+    else
+        valid_input = confirmation_dialog(input.email, session.sessions_completed);
+        new_subject = false;
+    end
 end
 
-if input.sessions_completed == 0
+input.sessions_completed = session.sessions_completed;
+input.current_session = session.sessions_completed + 1;
+input.subject = session.subject;
+
+if new_subject
 
     try
         stimuli = get(fetch(exec(db_conn, 'select * from stimuli')), 'Data');
@@ -239,4 +247,16 @@ function on_exit_function(db_conn,old_font_size,old_image_visiblity)
     close(db_conn)
     set(0, 'DefaultUIControlFontSize', old_font_size);
     set(0,'DefaultImageVisible', old_image_visiblity)
+end
+
+function accept = confirmation_dialog(email, sessions_completed)
+
+    session_msg = {'first','second', 'third'};
+    resp = questdlg({['Your e-mail address is: ' email], ...
+                     ['This is your ' session_msg{sessions_completed + 1} ' session.'], ...
+                     '', ...
+                     'Is this correct?'}, ...
+                     'Confirm Subject Info', ...
+                     'No', 'Yes', 'No');
+    accept = strcmp(resp, 'Yes');
 end
