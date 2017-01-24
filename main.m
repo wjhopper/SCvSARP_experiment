@@ -144,6 +144,29 @@ else
                 'Data');
 end
 
+%% Construct the datasets that will govern stimulus presentation 
+% and have responses stored in them
+episodic_lists = lists(lists.session == input.current_session, ...
+                    {'subject', 'id', 'episodic_cue', 'target'});
+semantic_lists = lists(lists.session == input.current_session, ...
+                       {'subject', 'id','semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3', 'target', 'practice'});
+semantic_lists = stack(semantic_lists, {'semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3'}, ...
+                       'newDataVarName','semantic_cue', 'IndVarName', 'cue_number');
+semantic_lists.cue_number = cellfun(@(x) str2double(x(end)), cellstr(semantic_lists.cue_number));
+semantic_lists = semantic_lists(:, {'subject','id','target','cue_number','semantic_cue','practice'});    
+
+
+study_lists = [episodic_lists, dataset(nan(size(episodic_lists, 1), 1), 'VarNames', {'onset'})];
+
+restudy_pairs = strcmp(semantic_lists.practice, 'S');
+study_practice_lists = [semantic_lists(restudy_pairs,:), ... 
+                        dataset(nan(sum(restudy_pairs), 1),'VarNames', {'onset'})];
+
+test_pairs = strcmp(semantic_lists.practice, 'T');
+test_practice_lists = [semantic_lists(test_pairs,:), response_schema(sum(test_pairs))];
+
+final_test_lists = [episodic_lists,  response_schema(size(episodic_lists, 1))];
+
 [window, constants] = windowSetup(constants, input);
 
 %% end of the experiment %%
@@ -259,4 +282,9 @@ function accept = confirmation_dialog(email, sessions_completed)
                      'Confirm Subject Info', ...
                      'No', 'Yes', 'No');
     accept = strcmp(resp, 'Yes');
+end
+
+function ds = response_schema(n_rows)
+   ds = [mat2dataset(nan(n_rows, 6), 'VarNames', {'onset', 'recalled', 'latency', 'FP', 'LP', 'advance'}), ...
+         dataset(cellstr(repmat(char(0), n_rows, 1)), 'VarNames', {'response'})];
 end
