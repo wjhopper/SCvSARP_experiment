@@ -158,10 +158,17 @@ while ~valid_input
     end
 end
 
-input.sessions_completed = session.sessions_completed;
-input.current_session = session.sessions_completed + 1;
-input.subject = session.subject;
 
+
+%% Add the fields from input and session to the constants struct
+constants.subject = session.subject;
+constants.email = session.email;
+constants.sessions_completed = session.sessions_completed;
+constants.current_session = session.sessions_completed + 1;
+constants.debugLevel = input.debugLevel;
+clear input session
+
+%% Get or create the lists for the subject
 if new_subject
 
     try
@@ -171,22 +178,22 @@ if new_subject
     end
 
     lists = create_lists(stimuli, constants);
-    lists.subject = repmat(input.subject, size(lists,1), 1);
+    lists.subject = repmat(constants.subject, size(lists,1), 1);
     insert(db_conn, 'lists', ...
            lists.Properties.VarNames, ...
            lists);
 else
     lists = get(fetch(exec(db_conn, ...
                            sprintf('select * from lists where subject = ''%d''', ...
-                                   input.subject))), ...
+                                   constants.subject))), ...
                 'Data');
 end
 
 %% Construct the datasets that will govern stimulus presentation 
 % and have responses stored in them
-episodic_lists = lists(lists.session == input.current_session, ...
+episodic_lists = lists(lists.session == constants.current_session, ...
                     {'subject', 'id', 'episodic_cue', 'target'});
-semantic_lists = lists(lists.session == input.current_session, ...
+semantic_lists = lists(lists.session == constants.current_session, ...
                        {'subject', 'id','semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3', 'target', 'practice'});
 semantic_lists = stack(semantic_lists, {'semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3'}, ...
                        'newDataVarName','semantic_cue', 'IndVarName', 'cue_number');
@@ -205,7 +212,21 @@ test_practice_lists = [semantic_lists(test_pairs,:), response_schema(sum(test_pa
 
 final_test_lists = [episodic_lists,  response_schema(size(episodic_lists, 1))];
 
-[window, constants] = windowSetup(constants, input);
+% Shuffle items within lists, so that pairs aren't given in the same order
+% in all phases
+for i = 1:unique(study_lists.list)
+
+    [new_rows, old_rows] = shuffle_list(study_practice_lists.list, i);
+    study_practice_lists(old_rows,:) = sortrows(study_practice_lists(new_rows,:), 'cue_number');
+
+    [new_rows, old_rows] = shuffle_list(test_practice_lists.list, i);
+    test_practice_lists(old_rows,:) = sortrows(test_practice_lists(new_rows,:), 'cue_number');
+
+    [new_rows, old_rows] = shuffle_list(final_test_lists.list, i);
+    final_test_lists(old_rows,:) = final_test_lists(new_rows,:);
+end
+
+[window, constants] = windowSetup(constants);
 
 %% end of the experiment %%
 windowCleanup(constants)
@@ -246,20 +267,22 @@ function windowCleanup(constants)
     rmpath(constants.lib_dir,constants.root_dir);
 end
 
-function [window, constants] = windowSetup(constants, input)
-    PsychDefaultSetup(2);
+function [window, constants] = windowSetup(constants)
+    PsychDefaultSetup(2); % assert OpenGL install, unify keys, fix color range
     constants.screenNumber = max(Screen('Screens')); % Choose a monitor to display on
     constants.res=Screen('Resolution',constants.screenNumber); % get screen resolution
     constants.dims = [constants.res.width constants.res.height];
-    if any(input.debugLevel == [0 1])
+    if any(constants.debugLevel == [0 1])
     % Set the size of the PTB window based on screen size and debug level
         constants.screen_scale = [];
     else
-        constants.screen_scale = reshape((constants.dims' * [(1/8),(7/8)]),1,[]);
+        constants.screen_scale = reshape(round(constants.dims' * [(1/8),(7/8)]), 1, []);
     end
 
     try
-        [window, constants.winRect] = Screen('OpenWindow', constants.screenNumber, (2/3)*WhiteIndex(constants.screenNumber) , round(constants.screen_scale));
+        [window, constants.winRect] = Screen('OpenWindow', constants.screenNumber, ...
+                                             (2/3)*WhiteIndex(constants.screenNumber), ...
+                                             constants.screen_scale);
     % define some landmark locations to be used throughout
         [constants.xCenter, constants.yCenter] = RectCenter(constants.winRect);
         constants.center = [constants.xCenter, constants.yCenter];
