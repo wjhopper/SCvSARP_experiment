@@ -13,6 +13,7 @@ ip = inputParser;
 addParamValue(ip,'email', 'will@fake.com', @validate_email);
 addParamValue(ip,'sessions_completed', 0, @(x) x <= 3);% # sessions must be kept in sync with constants.n_sessions
 addParamValue(ip,'debugLevel',1, @isnumeric);
+addParamValue(ip,'robotType', 'Good', @(x) sum(strcmp(x, {'Good','Bad','Chaotic'}))==1)
 parse(ip,varargin{:}); 
 input = ip.Results;
 defaults = ip.UsingDefaults;
