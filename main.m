@@ -350,14 +350,6 @@ function ds = response_schema(n_rows)
          dataset(cellstr(repmat(char(0), n_rows, 1)), 'VarNames', {'response'})];
 end
 
-function setupTestKBQueue
-    keysOfInterest = zeros(1,256);
-    keysOfInterest(KbName({'a','b','c','d','e','f','g','h','i','j','k','l','m', ...
-                           'n','o','p','q','r','s','t','u','v','w','x','y','z', ...
-                           'BACKSPACE', 'RETURN'})) = 1;
-    KbQueueCreate([], keysOfInterest);
-end
-
 function [ new_row_ind, old_row_ind ] = shuffle_list(x, list)
     old_row_ind = find(x == list);
     new_row_ind = old_row_ind(randperm(numel(old_row_ind)));
