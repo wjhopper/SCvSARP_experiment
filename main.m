@@ -55,6 +55,44 @@ set(0, 'DefaultUIControlFontSize', 14);
 old_image_visiblity = get(0,'DefaultImageVisible');
 set(0,'DefaultImageVisible','off')
 
+%% Debug Levels
+% Level 0: normal experiment
+if input.debugLevel >= 0
+    constants.cueDur = 3; % Length of time to study each cue-target pair
+    constants.testDur = 10;
+    constants.readtime=10;
+    constants.countdownSpeed = 1;
+    constants.ISI = .5;
+    inputHandler = makeInputHandlerFcn('KbQueue');
+end
+
+% Level 1: Fast Stim durations, readtimes & breaks
+if input.debugLevel >= 1
+    hertz = Screen('NominalFrameRate', max(Screen('Screens'))); % hertz = 1/ifi
+    constants.cueDur = (30/hertz); % pairs on screen for the length of 30 flip intervals
+    constants.testDur = 3;
+    constants.readtime = constants.cueDur;
+end
+
+% Level 2: Fast countdowns & Game
+if input.debugLevel >= 2
+    constants.countdownSpeed = constants.cueDur;
+end
+
+% Level 4: Robot input
+if input.debugLevel >= 4
+    inputHandler = makeInputHandlerFcn([input.robotType,'Robot']);
+    constants.Robot = java.awt.Robot;
+end
+
+% Level 4: Extreme debugging, useful for knowing if flips are timed ok.
+if input.debugLevel >= 5
+    constants.cueDur = (1/hertz); % pairs on screen for only 1 flip
+    constants.countdownSpeed = constants.cueDur;
+    constants.readtime = constants.cueDur;
+    constants.ISI = constants.cueDur;
+end
+
 %% Connect to the database
 
 setdbprefs('DataReturnFormat', 'dataset'); % Retrieved data should be a dataset object
@@ -64,7 +102,7 @@ try
     % instance must be a predefined datasource at the OS level
     db_conn = database.ODBCConnection('fam_sarp', 'will', ''); % Connect to the db
 catch db_error
-   database_error(db_error)
+    database_error(db_error)
 end
 % When cleanupObj is destroyed, it will execute the close(db_conn) statement
 % This ensures we don't leave open db connections lying around somehow
