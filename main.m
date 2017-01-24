@@ -192,14 +192,14 @@ end
 %% Construct the datasets that will govern stimulus presentation 
 % and have responses stored in them
 episodic_lists = lists(lists.session == constants.current_session, ...
-                    {'subject', 'id', 'episodic_cue', 'target'});
+                    {'list', 'id', 'episodic_cue', 'target'});
 semantic_lists = lists(lists.session == constants.current_session, ...
-                       {'subject', 'id','semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3', 'target', 'practice'});
+                       {'list','id','semantic_cue_1', 'semantic_cue_2', ...
+                        'semantic_cue_3', 'target', 'practice'});
 semantic_lists = stack(semantic_lists, {'semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3'}, ...
                        'newDataVarName','semantic_cue', 'IndVarName', 'cue_number');
 semantic_lists.cue_number = cellfun(@(x) str2double(x(end)), cellstr(semantic_lists.cue_number));
-semantic_lists = semantic_lists(:, {'subject','id','target','cue_number','semantic_cue','practice'});    
-
+semantic_lists = semantic_lists(:, {'list','id','cue_number','semantic_cue','target','practice'});
 
 study_lists = [episodic_lists, dataset(nan(size(episodic_lists, 1), 1), 'VarNames', {'onset'})];
 
@@ -348,4 +348,17 @@ end
 function ds = response_schema(n_rows)
    ds = [mat2dataset(nan(n_rows, 6), 'VarNames', {'onset', 'recalled', 'latency', 'FP', 'LP', 'advance'}), ...
          dataset(cellstr(repmat(char(0), n_rows, 1)), 'VarNames', {'response'})];
+end
+
+function setupTestKBQueue
+    keysOfInterest = zeros(1,256);
+    keysOfInterest(KbName({'a','b','c','d','e','f','g','h','i','j','k','l','m', ...
+                           'n','o','p','q','r','s','t','u','v','w','x','y','z', ...
+                           'BACKSPACE', 'RETURN'})) = 1;
+    KbQueueCreate([], keysOfInterest);
+end
+
+function [ new_row_ind, old_row_ind ] = shuffle_list(x, list)
+    old_row_ind = find(x == list);
+    new_row_ind = old_row_ind(randperm(numel(old_row_ind)));
 end
