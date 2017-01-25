@@ -299,13 +299,20 @@ function [window, constants] = windowSetup(constants)
         [constants.width, constants.height] = Screen('DisplaySize', constants.screenNumber); %in mm
 
     % Font Configuration
+        fontsize=28;
         Screen('TextFont',window, 'Arial');  % Set font to Arial
-        Screen('TextSize',window, 28);       % Set font size to 28
+        Screen('TextSize',window, fontsize);       % Set font size to 28
         Screen('TextStyle', window, 1);      % 1 = bold font
         Screen('TextColor', window, [0 0 0]); % Black text
+
+    % Text layout config
+        constants.wrapat = round(constants.res.width/fontsize, -1); % line length
+        constants.spacing=35;
+        constants.leftMargin = constants.winRect(3)/5;
+
     catch
-        psychrethrow(psychlasterror);
         windowCleanup(constants)
+        psychrethrow(psychlasterror);
     end
 end
 
