@@ -278,7 +278,7 @@ function [window, constants] = windowSetup(constants)
 
     try
         [window, constants.winRect] = Screen('OpenWindow', constants.screenNumber, ...
-                                             (2/3)*WhiteIndex(constants.screenNumber), ...
+                                             round(2/3*255), ... % light grey background
                                              constants.screen_scale);
     % define some landmark locations to be used throughout
         [constants.xCenter, constants.yCenter] = RectCenter(constants.winRect);
