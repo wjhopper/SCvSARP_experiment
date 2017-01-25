@@ -18,10 +18,6 @@ parse(ip,varargin{:});
 input = ip.Results;
 defaults = ip.UsingDefaults;
 
-constants.exp_onset = GetSecs; % record the time the experiment began
-KbName('UnifyKeyNames') % use a standard set of keyname/key positions
-rng('shuffle'); % set up and seed the randon number generator, so lists get properly permuted
-
 % Get full path to the directory the function lives in, and add it to the path
 constants.root_dir = fileparts(mfilename('fullpath'));
 path(path,constants.root_dir);
