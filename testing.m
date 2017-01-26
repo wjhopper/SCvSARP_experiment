@@ -30,6 +30,11 @@ function [onset, response, firstPress, lastPress] = testing(data, inputHandler, 
 % used to infer the amount of time spent typing.
 % first
 % Switch to high priority mode and increase the fontsize
+
+if nargin <= 4
+    message = '';
+end
+
 oldPriority = Priority(1);
 oldsize = Screen('TextSize', window, 40);
 
