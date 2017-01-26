@@ -1,25 +1,27 @@
-function data = practice(data, first, inputHandler, window, constants)
+function data = practice(test_practice, study_practice, first, inputHandler, window, constants)
 
-    studyRows = strcmp(data.practice,'S');
-    testRows = strcmp(data.practice,'T');
     if strcmp('S', first)
+        % Study
         countdown('It''s time to restudy words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        data.onset(studyRows) = study(data(studyRows, {'cue','target'}), window, constants);
+        data.onset = study(study_practice(:, {'cue','target'}), window, constants);
+        % Then retest
         countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);    
-        [onset, response, firstPress, lastPress] = testing(data(testRows,:), inputHandler, window, constants);
+        [onset, response, firstPress, lastPress] = testing(test_practice, inputHandler, window, constants);
     else
-        countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
+        % Test
+        countdown('It''s time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        [onset, response, firstPress, lastPress] = testing(data(testRows,:), inputHandler, window, constants);
-        countdown('It''s time to restudy words from the last list', constants.practiceCountdown,...
+        [onset, response, firstPress, lastPress] = testing(test_practice, inputHandler, window, constants);
+        % Then Restudy
+        countdown('It''s time to restudy some words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        data.onset(studyRows) = study(data(studyRows, {'cue','target'}), window, constants);
+        data.onset = study(study_practice(:, {'cue','target'}), window, constants);
     end
 
-    data.onset(testRows) = onset;
-    data.response(testRows) = response;
-    data.FP(testRows) = firstPress;
-    data.LP(testRows) = lastPress;
+    data.onset = onset;
+    data.response = response;
+    data.FP = firstPress;
+    data.LP = lastPress;
 end

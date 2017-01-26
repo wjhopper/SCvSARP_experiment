@@ -12,12 +12,15 @@ switch phase_name
                                             {'S', 'S', 'S', 'S', 'S', 'S'}'], ...
                                            'VariableNames', {'cue','target', 'practice'}),...
                                 array2table(nan(6, 1), 'VariableNames', {'onset'})];
+        study_practice_pairs = study_practice_pairs(randperm(size(study_practice_pairs, 1)),:);           
         test_practice_pairs = [cell2table([{'raisin','vine','fruit','ant','bug','cricket'}',...
                                            {'grape','grape','grape','insect','insect','insect'}', ...
                                            {'T', 'T', 'T', 'T', 'T', 'T'}'], ...
                                           'VariableNames', {'cue','target', 'practice'}),...
-                               response_schema(6)];                      
-        final_test_pairs = final_test_pairs(randperm(size(final_test_pairs,1)),:);
+                               response_schema(6)];
+        test_practice_pairs = test_practice_pairs(randperm(size(test_practice_pairs, 1)),:);
+        final_test_pairs = [study_pairs(randperm(size(study_pairs, 1)), 1:3), ...
+                            response_schema(6)];
 
         %% Screen        
         KbQueueCreate;        
@@ -57,7 +60,7 @@ switch phase_name
                 '\n\nFor example, if you were restudying to help you remember the word "oval", you might see the pairs "circle - oval", "round - oval", and "shape - oval".'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
         listen(inputHandler, constants, '');
-        
+
         %% Screen
         text = ['When you are tested, you will be shown a word on the left, but the word on the right will be missing.' ...
                 '\n\nYour job is to remember the missing word from the pair, and type it in using the keyboard.'...
@@ -65,7 +68,7 @@ switch phase_name
                 '\n\nIf you do not type anything after 10 seconds, the test will automatically continue to the next pair.'];
         drawInstructions(text, 'any key', constants.readtime*2, window, constants);
         listen(inputHandler, constants, '');
-                
+
          %% Screen
         text = ['On the practice test, the word on the left will be related to a word on the list you need to remember and type in.',...
                 '\n\nFor example, if you were taking a practice test to help you remember the word "camera", you might ',...
@@ -92,14 +95,15 @@ switch phase_name
         countdown('It''s time to study a new list of pairs', constants.studyNewListCountdown, ...
                   constants.countdownSpeed,  window, constants);
         study(study_pairs, window, constants);
-    
+
         %% Practice block: Practice
-        practice(semantic_pairs, 'S', inputHandler, window, constants);
-        
+        practice(study_practice_pairs, test_practice_pairs, 'S', inputHandler, window, constants);
+
         %% Practice block: Test
         giveInstructions('final', inputHandler, window, constants);
         setupTestKBQueue;
-        testing(study_pairs, inputHandler, window, constants, '');
+        [On, resp, FP, LP] = testing(final_test_pairs, inputHandler, window, constants, '');
+        final_test_pairs(:,{'onset', 'FP', 'LP','response'}) = table(On,FP,LP,resp);
         KbQueueRelease;
 
         %% Screen
