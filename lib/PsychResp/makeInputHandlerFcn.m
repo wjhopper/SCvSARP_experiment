@@ -13,7 +13,7 @@ switch handlerName
         
 end
 
-    function [string, rt, advance, redraw]= kbQueueHandler(device, string, rt, varargin) 
+    function [keys_pressed, press_times] = kbQueueHandler(device, varargin) 
         %
         % The rules of this handler are as follows:
         %
@@ -45,51 +45,21 @@ end
         % means no valid input was given.
         
         % Set flag defaults
-        advance = 0;
-        redraw = 0;
         % Check the KbQueue for presses
-        [ pressed, firstPress]=KbQueueCheck(device);
+        [ pressed, press_times]=KbQueueCheck(device);
         if pressed
             % find the keycode for the keys pressed since last check            
-            keys = find(firstPress);
+            keys_pressed = find(press_times);
             % sort the recorded press time to find their linear position
-            [~, ind] = sort(firstPress(firstPress~=0));
+            [~, ind] = sort(press_times(press_times~=0));
             % Arrange the keycodes according to the order they were pressed
-            keys = keys(ind);
-            % Loop over each recorded keycode. There should ideally be only one,
-            % but crazy things can happen
-            for i = 1:numel(keys)
-                switch keys(i)
-                    case 13 %13 is return
-                        if ~isempty(string) % set the advance flag is input has been given
-                            advance = 1;
-                        end
-                    case 39  %39 is right arrow
-                        if isempty(string) % set the advance flag if no input has been given
-                            advance = 1;
-                        end
-                    case 8 %8 is BACKSPACE
-                        % remove the last entered character and its
-                        % keypress timestamp but only if some user input
-                        % has been given previously (meaning the input
-                        % string will not be ''.
-                        if ~strcmp('',string) 
-                            string = string(1:end-1);       
-                            rt = rt(1:end-1);
-                        end
-                    otherwise
-                        % Add the character just pressed to the input
-                        % string, and record the timestamp of its keypress.
-                        % Set the redraw flag to 1.
-                        string = [string, KbName(keys(i))]; %#ok<AGROW>
-                        rt = [rt firstPress(keys(i))]; %#ok<AGROW>
-                        redraw = 1;
-                end
-            end
+            keys_pressed = keys_pressed(ind);
+        else
+            keys_pressed = [];            
         end
     end
 
-    function [string, rt, advance, redraw] = GoodRobot( device, string, rt, varargin)
+    function [keys_pressed, press_times] = GoodRobot(device, answer, varargin)
 
     % This function is a wrapper around kbQueueHandler, which provides
     % automatic keyboard input by simulating a keypress of each character in the given response string
@@ -111,23 +81,20 @@ end
     % a new answer to input) and so we begin with inputing the first character of
     % the new answer.
 
-        answer = varargin{1};
         if n <= length(answer)
             eval([ 'rob.keyPress(java.awt.event.KeyEvent.VK_', upper(answer(n)), ');' ]);
-            eval([ 'rob.keyRelease(java.awt.event.KeyEvent.VK_', upper(answer(n)), ');' ]);        
-            [string, rt, advance, redraw] = kbQueueHandler(device, string, rt);
+            eval([ 'rob.keyRelease(java.awt.event.KeyEvent.VK_', upper(answer(n)), ');' ]);
             n = n + 1;
         else
             rob.keyPress(java.awt.event.KeyEvent.VK_ENTER);
-            rob.keyRelease(java.awt.event.KeyEvent.VK_ENTER);           
-            [string, rt, advance, redraw] = kbQueueHandler(device, string, rt);
+            rob.keyRelease(java.awt.event.KeyEvent.VK_ENTER);
             n = 1;
         end
-   
+       [keys_pressed, press_times] = kbQueueHandler(device);
     end
 
 
-    function [string, rt, advance, redraw] = BadRobot(device, string, rt, varargin)
+    function [keys_pressed, press_times] = BadRobot(device, varargin)
 
     % This function is a wrapper around kbQueueHandler, which provides
     % automatic keyboard input by simulating a keypress of each character in the given response string
@@ -154,15 +121,13 @@ end
         if n <= length(answer)
             eval([ 'rob.keyPress(java.awt.event.KeyEvent.VK_', upper(answer(n)), ');' ]);
             eval([ 'rob.keyRelease(java.awt.event.KeyEvent.VK_', upper(answer(n)), ');' ]);        
-            [string, rt, advance, redraw] = kbQueueHandler(device, string, rt);
             n = n + 1;
         else
             rob.keyPress(java.awt.event.KeyEvent.VK_ENTER);
             rob.keyRelease(java.awt.event.KeyEvent.VK_ENTER);           
-            [string, rt, advance, redraw] = kbQueueHandler(device, string, rt);
             n = 1;
         end
-   
+            [keys_pressed, press_times] = kbQueueHandler(device);   
     end
 end
 

@@ -12,7 +12,7 @@ ip = inputParser;
 %#ok<*NVREPL> dont warn about addParamValue
 addParamValue(ip,'email', 'will@fake.com', @validate_email);
 addParamValue(ip,'sessions_completed', 0, @(x) x <= 3);% # sessions must be kept in sync with constants.n_sessions
-addParamValue(ip,'debugLevel',1, @isnumeric);
+addParamValue(ip,'debugLevel',0, @(x) isnumeric(x) && x >= 0);
 addParamValue(ip,'robotType', 'Good', @(x) sum(strcmp(x, {'Good','Bad','Chaotic'}))==1)
 parse(ip,varargin{:}); 
 input = ip.Results;
@@ -61,6 +61,7 @@ if input.debugLevel >= 0
     constants.countdownSpeed = 1;
     constants.ISI = .5;
     inputHandler = makeInputHandlerFcn('KbQueue');
+    constants.device = [];
 end
 
 % Level 1: Fast Stim durations, readtimes & breaks
@@ -303,7 +304,7 @@ function [window, constants] = windowSetup(constants)
         Screen('TextColor', window, [0 0 0]); % Black text
 
     % Text layout config
-        constants.wrapat = round(constants.res.width/fontsize, -1); % line length
+        constants.wrapat = 65; % line length
         constants.spacing=35;
         constants.leftMargin = constants.winRect(3)/5;
 
