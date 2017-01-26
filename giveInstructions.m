@@ -2,17 +2,27 @@ function []= giveInstructions(phase_name, inputHandler, window, constants)
 
 switch phase_name
     case 'intro'
-        data = cell2table([{'building'; 'painting'; 'tape'; 'cloth'; 'mug';}, ...
-                          {'car'; 'trash'; 'jacket'; 'pine'; 'trunk'}], ...
-                          'VariableNames', {'cue','target'});
-        KbQueueCreate;
-        %% Screen
+        episodic_pairs = [cell2table([{'pine', 'puddle', 'napkin','zebra', 'root', 'bite'}', ...
+                                      {'top', 'grape', 'insect', 'tape', 'mug', 'cloth'}', ...
+                                      {'S', 'T', 'T', 'N', 'S', 'N'}'], ...
+                                     'VariableNames', {'cue','target', 'practice'}), ...
+                          table(nan(6,1), 'VariableNames', {'onset'})];
+        semantic_pairs = [cell2table([{'bottom','counter','mountain','raisin','vine','fruit','cup','coffee','jug','ant','bug','cricket'}',...
+                                      {'top','top','top','grape','grape','grape','mug','mug','mug','insect','insect','insect'}', ...
+                                      {'S', 'S', 'S', 'T', 'T', 'T', 'S', 'S', 'S', 'T', 'T', 'T'}'], ...
+                                     'VariableNames', {'cue','target', 'practice'}),...
+                          array2table(nan(12, 3), 'VariableNames', {'onset','FP','LP'}), ...
+                          cell2table(cell(12,1), 'VariableNames', {'response'})];
+        semantic_pairs = semantic_pairs(randperm(size(semantic_pairs,1)),:);
+
+        %% Screen        
+        KbQueueCreate;        
         text = ['Welcome to the experiment!' ...
                 '\n\nIn this experiment, you will be shown pairs of words.' ...
                 '\nYour task is to learn these pairs, so that you will be able to remember them later on a test.'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
         listen(inputHandler, constants, '');
-        
+
         %% Screen
         text = ['Each word pair will have the first word on the left side of the screen, and the second word on the right side.', ...
                 '\n\nThe pairs you study will be grouped into "lists" of ', ...
@@ -23,62 +33,70 @@ switch phase_name
 
         %% Screen
         text = ['The best way to remember the words in the pair is to think of an association between them.' ...
-                '\n\nFor instance, if the pair is "library - oval", you could imagine an oval shaped library.' ...
-                '\n\n Or if the pair is "picture - bread", you could imagine a picture of some bread.',...
-                '\n\nTry to do this for every pair you see.'];
+                '\n\nFor instance, if you studied the list:', ...
+                '\n\nlibrary - oval', ...
+                '\nfoam - camera', ...
+                '\n\nyou could imagine an oval shaped library and a picture of some bread.'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
-        listen(inputHandler, constants, '');
-       
-        %% Screen
-        text = 'Next, you will see an example of what a list of word pairs will look like when you study it during the experiment.';
-        drawInstructions(text, 'any key', 0, window, constants);
-        listen(inputHandler, constants, '');
-        study(data, window, constants);
-        DrawFormattedText(window, 'Press any key to continue', 'center', constants.winRect(4)*.9, [],constants.wrapat,[],[],1.5);
-        Screen('Flip',window);
-        listen(inputHandler, constants, '');
-        
-        %% Screen
-        text = ['After you study each list of pairs, you will get a chance to practice some of the word pairs you just studied.' ...
-                '\n\nSome of the pairs will be shown to you again, so you''ll have another chance to study them.'...
-                '\n\nFor other pairs, you will take a practice test where you try to remember a word that is missing from the pair.'];
-        drawInstructions(text, 'any key', constants.readtime*2, window, constants);
-        listen(inputHandler, constants, '');
-        
-        %% Screen
-        text = ['During the memory test, you will be shown a word on the left, but the word on the right will be missing.' ...
-                '\n\nYour job is to remember the word that is missing from the pair, and type it in using the keyboard.'...
-                '\n\nWhen you finish typing the missing word, press Enter to continue to the next pair.', ...
-                '\n\nIf you do not type anything after 8 seconds, the test will automatically continue to the next pair.'];
-        drawInstructions(text, 'any key', constants.readtime*2, window, constants);
         listen(inputHandler, constants, '');
 
         %% Screen
-        setupTestKBQueue;        
-        text = 'Here is an example of a memory test.\nType in the word you remember being paired with the given word and then press Enter.';
-        testing(data(3:5,:), inputHandler, window, constants, text);
+        text = ['After you study each list of pairs, there will be a brief delay, followed by another round of practice to help your memory.',...
+                '\n\nTo help you remember the words on the list, you will see words related to the ones you need to remember.',...
+                '\n\nYou will practice remembering the words in two ways: by restudying, and by taking practice tests'];
+        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        listen(inputHandler, constants, '');
+
+        %% Screen
+        text = ['When you restudy a word from the list, you will be shown that word together with a related word.' ...
+                '\n\nEach word you restudy will be shown as a pair 3 times, with a different related word each time'....
+                '\n\nFor example, if you were restudying to help you remember the word "oval", you might see the pairs "circle - oval", "round - oval", and "shape - oval".'];
+        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        listen(inputHandler, constants, '');
+        
+        %% Screen
+        text = ['When you are tested, you will be shown a word on the left, but the word on the right will be missing.' ...
+                '\n\nYour job is to remember the missing word from the pair, and type it in using the keyboard.'...
+                '\n\nWhen you finish typing, press Enter to continue to the next pair.', ...
+                '\n\nIf you do not type anything after 10 seconds, the test will automatically continue to the next pair.'];
+        drawInstructions(text, 'any key', constants.readtime*2, window, constants);
+        listen(inputHandler, constants, '');
+                
+         %% Screen
+        text = ['On the practice test, the word on the left will be related to a word on the list you need to remember and type in.',...
+                '\n\nFor example, if you were taking a practice test to help you remember the word "camera", you might ',...
+                'be prompted to recall "camera" with "film - ?", "flash - ?" and "video - ?".'];
+        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        listen(inputHandler, constants, '');       
+
+        %% Screen
+        text = ['After the practice phase, there will be another brief delay, followed by a final memory test.',...
+                '\n\nOn this test, you will be prompted to recall words from the list by presenting words from left-hand', ...
+                ' side of each pair you initially studied.', ...
+                '\n\n For example you might be prompted with "library - ?" and \n"foam - ?" to recall "oval" and "camera".'];
+        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        listen(inputHandler, constants, '');     
+
+        %% Screen
+        text = ['Let''s do one quick practice run before the real experiment begins.',...
+                '\n\nWhen you continue to the next screen, you''ll prepare for the real experiment by studying a list, practicing the words, and taking a final test',...
+                '\n\nDuring the real experiment, the lists will be longer, and there will be delays in between each phase'];
+        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        listen(inputHandler, constants, '');  
+
+        %% Practice block: Study 
+        countdown('It''s time to study a new list of pairs', constants.studyNewListCountdown, ...
+                  constants.countdownSpeed,  window, constants);
+        study(episodic_pairs, window, constants);
+    
+        %% Practice block: Practice
+        practice(semantic_pairs, 'S', inputHandler, window, constants);
+        
+        %% Practice block: Test
+        giveInstructions('final', inputHandler, window, constants);
+        setupTestKBQueue;
+        testing(episodic_pairs, inputHandler, window, constants, '');
         KbQueueRelease;
-
-        %% Screen
-        KbQueueCreate;
-        DrawFormattedText(window, 'In case you missed some, the answers were "jacket", "pine" and "trunk"', ...
-                          constants.leftMargin, 'center', [], constants.wrapat, [],[], 1.5);
-        DrawFormattedText(window, 'Press any key to continue', 'center', constants.winRect(4)*.9);
-        Screen('Flip',window);
-        listen(inputHandler, constants, '');
-
-        %% Screen
-        text = ['After you finish the practice phase for each list, you will take a final memory test on the pairs from that list.',...
-                '\n\nYour job on the final test is to recall the missing word from the pair and type it in, just like on the practice test.'];
-        drawInstructions(text, 'any key', constants.readtime, window, constants);
-        listen(inputHandler, constants, '');
-
-        %% Screen
-        text = ['You will get a 5 minute break in between some of the lists.',...
-            '\n\nDuring these breaks, you can relax by playing a game of Tetris which will popup on the screen.', ...
-            '\n\nWhen the break is finished, your game will pause and the experiment will resume where you left off'];
-        drawInstructions(text, 'any key', constants.readtime, window, constants);
-        listen(inputHandler, constants, '');
 
         %% Screen
         koi=zeros(1,256);

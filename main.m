@@ -226,7 +226,12 @@ end
 
 [window, constants] = windowSetup(constants);
 
-giveInstructions('intro', inputHandler, window, constants);
+try 
+    giveInstructions('intro', inputHandler, window, constants);
+catch error
+    windowCleanup(constants);
+    rethrow(error)
+end
 %% end of the experiment %%
 windowCleanup(constants)
 exit_stat=0;
