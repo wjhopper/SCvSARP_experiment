@@ -99,6 +99,7 @@ for j = 1:size(data,1)
         end
     end
     [response{j}, firstPress(j), lastPress(j)] = cleanResponses(string, rt);
+    KbQueueFlush;
 end
 Screen('TextSize', window, oldsize); % reset text size
 Priority(oldPriority);  % reset priority level
