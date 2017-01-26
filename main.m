@@ -154,6 +154,10 @@ while ~valid_input
         valid_input = confirmation_dialog(input.email, session.sessions_completed);
         new_subject = false;
     end
+    
+    if ~valid_input && ~ismember('email', defaults)
+        defaults = [defaults, {'email'}]; %#ok<AGROW>
+    end
 end
 
 
