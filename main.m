@@ -93,7 +93,7 @@ end
 
 %% Connect to the database
 
-setdbprefs('DataReturnFormat', 'dataset'); % Retrieved data should be a dataset object
+setdbprefs('DataReturnFormat', 'table'); % Retrieved data should be a dataset object
 setdbprefs('ErrorHandling', 'report'); % Throw runtime errors when a db error occurs
 
 try
@@ -160,8 +160,6 @@ while ~valid_input
     end
 end
 
-
-
 %% Add the fields from input and session to the constants struct
 constants.subject = session.subject;
 constants.email = session.email;
@@ -182,7 +180,7 @@ if new_subject
     lists = create_lists(stimuli, constants);
     lists.subject = repmat(constants.subject, size(lists,1), 1);
     insert(db_conn, 'lists', ...
-           lists.Properties.VarNames, ...
+           lists.Properties.VariableNames, ...
            lists);
 else
     lists = get(fetch(exec(db_conn, ...
@@ -194,20 +192,20 @@ end
 %% Construct the datasets that will govern stimulus presentation 
 % and have responses stored in them
 episodic_lists = lists(lists.session == constants.current_session, ...
-                    {'list', 'id', 'episodic_cue', 'target'});
+                       {'list', 'id', 'episodic_cue', 'target'});
 semantic_lists = lists(lists.session == constants.current_session, ...
                        {'list','id','semantic_cue_1', 'semantic_cue_2', ...
                         'semantic_cue_3', 'target', 'practice'});
 semantic_lists = stack(semantic_lists, {'semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3'}, ...
-                       'newDataVarName','semantic_cue', 'IndVarName', 'cue_number');
+                       'NewDataVariableName','semantic_cue', 'IndexVariableName', 'cue_number');
 semantic_lists.cue_number = cellfun(@(x) str2double(x(end)), cellstr(semantic_lists.cue_number));
 semantic_lists = semantic_lists(:, {'list','id','cue_number','semantic_cue','target','practice'});
 
-study_lists = [episodic_lists, dataset(nan(size(episodic_lists, 1), 1), 'VarNames', {'onset'})];
+study_lists = [episodic_lists, table(nan(size(episodic_lists, 1), 1), 'VariableNames', {'onset'})];
 
 restudy_pairs = strcmp(semantic_lists.practice, 'S');
-study_practice_lists = [semantic_lists(restudy_pairs,:), ... 
-                        dataset(nan(sum(restudy_pairs), 1),'VarNames', {'onset'})];
+study_practice_lists = [semantic_lists(restudy_pairs,:), ...
+                        table(nan(sum(restudy_pairs), 1),'VariableNames', {'onset'})];
 
 test_pairs = strcmp(semantic_lists.practice, 'T');
 test_practice_lists = [semantic_lists(test_pairs,:), response_schema(sum(test_pairs))];
@@ -358,11 +356,6 @@ function accept = confirmation_dialog(email, sessions_completed)
                      'Confirm Subject Info', ...
                      'No', 'Yes', 'No');
     accept = strcmp(resp, 'Yes');
-end
-
-function ds = response_schema(n_rows)
-   ds = [mat2dataset(nan(n_rows, 6), 'VarNames', {'onset', 'recalled', 'latency', 'FP', 'LP', 'advance'}), ...
-         dataset(cellstr(repmat(char(0), n_rows, 1)), 'VarNames', {'response'})];
 end
 
 function [ new_row_ind, old_row_ind ] = shuffle_list(x, list)
