@@ -240,15 +240,48 @@ for i = 1:unique(study_lists.list)
     final_test_lists(old_rows,:) = final_test_lists(new_rows,:);
 end
 
-[window, constants] = windowSetup(constants);
-
-try 
+try
+    [window, constants] = windowSetup(constants);
     giveInstructions('intro', inputHandler, window, constants);
+    setupTestKBQueue;
+%% Main Loop
+    for i = 1:unique(study_lists.list)
+% Study Phase
+        countdown('It''s time to study a new list of pairs', constants.studyNewListCountdown, ...
+                  constants.countdownSpeed,  window, constants);
+        studyIndex = study_lists.list == i;
+        study_lists.onset(studyIndex) = study(study_lists(studyIndex, :), window, constants);
+% Practice Phase
+        % Counterbalance study/test practice order between lists
+        if mod(i, 2) == 0
+            first = 'S';
+        else
+            first = 'T';
+        end
+        SPindex = study_practice_lists.list == i;
+        TPindex = test_practice_lists.list == i;
+        practice(study_practice_lists(SPindex,:), test_practice_lists(TPindex, :), ...
+                 first, inputHandler, window, constants);
+
+% Test Phase
+        giveInstructions('final', inputHandler, window, constants);
+        finalIndex = final_test_lists.list == i;
+        [onset, response, FP, LP] = testing(final_test_lists(finalIndex, :), ...
+                                            inputHandler, window, constants, '');
+        final_test_lists.onset(finalIndex) = onset;
+        final_test_lists.response(finalIndex) = response;
+        final_test_lists.FP(finalIndex) = FP;
+        final_test_lists.LP(finalIndex) = LP;
+    end
+
 catch error
     windowCleanup(constants);
     rethrow(error)
 end
+
 %% end of the experiment %%
+KbQueueRelease;
+giveInstructions('bye', [], window, constants);
 windowCleanup(constants)
 exit_stat=0;
 end % end main()
