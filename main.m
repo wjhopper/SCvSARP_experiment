@@ -205,13 +205,15 @@ end
 % and have responses stored in them
 episodic_lists = lists(lists.session == constants.current_session, ...
                        {'list', 'id', 'episodic_cue', 'target'});
+episodic_lists.Properties.VariableNames{'episodic_cue'} = 'cue';
+
 semantic_lists = lists(lists.session == constants.current_session, ...
                        {'list','id','semantic_cue_1', 'semantic_cue_2', ...
                         'semantic_cue_3', 'target', 'practice'});
 semantic_lists = stack(semantic_lists, {'semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3'}, ...
-                       'NewDataVariableName','semantic_cue', 'IndexVariableName', 'cue_number');
+                       'NewDataVariableName','cue', 'IndexVariableName', 'cue_number');
 semantic_lists.cue_number = cellfun(@(x) str2double(x(end)), cellstr(semantic_lists.cue_number));
-semantic_lists = semantic_lists(:, {'list','id','cue_number','semantic_cue','target','practice'});
+semantic_lists = semantic_lists(:, {'list','id','cue_number','cue','target','practice'});
 
 study_lists = [episodic_lists, table(nan(size(episodic_lists, 1), 1), 'VariableNames', {'onset'})];
 
