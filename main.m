@@ -55,6 +55,7 @@ set(0,'DefaultImageVisible','off')
 %% Debug Levels
 % Level 0: normal experiment
 if input.debugLevel >= 0
+    constants.screenSize = 'full';
     constants.cueDur = 3; % Length of time to study each cue-target pair
     constants.testDur = 10;
     constants.readtime=10;
@@ -66,29 +67,39 @@ end
 
 % Level 1: Fast Stim durations, readtimes & breaks
 if input.debugLevel >= 1
-    hertz = Screen('NominalFrameRate', max(Screen('Screens'))); % hertz = 1/ifi
-    constants.cueDur = (30/hertz); % pairs on screen for the length of 30 flip intervals
-    constants.testDur = 3;
+    constants.cueDur = 1; % pairs on screen for the length of 60 flip intervals
+    constants.testDur = 5;
     constants.readtime = constants.cueDur;
 end
 
-% Level 2: Fast countdowns & Game
+% Level 2: Fast countdowns
 if input.debugLevel >= 2
     constants.countdownSpeed = constants.cueDur;
 end
 
-% Level 4: Robot input
+% Level 3: Small Screen, Human Input
+if input.debugLevel >= 3
+    constants.screenSize = 'small';
+end
+
+% Level 4: Robot input, Large Screen
 if input.debugLevel >= 4
+    constants.screenSize = 'full';    
     inputHandler = makeInputHandlerFcn([input.robotType,'Robot']);
     constants.Robot = java.awt.Robot;
 end
 
-% Level 4: Extreme debugging, useful for knowing if flips are timed ok.
+% Level 5: Extreme debugging, useful for knowing if flips are timed ok.
 if input.debugLevel >= 5
+    hertz = Screen('NominalFrameRate', max(Screen('Screens'))); % hertz = 1/ifi    
     constants.cueDur = (1/hertz); % pairs on screen for only 1 flip
     constants.countdownSpeed = constants.cueDur;
     constants.readtime = constants.cueDur;
     constants.ISI = constants.cueDur;
+end
+
+if input.debugLevel >= 6
+    constants.screenSize = 'small';
 end
 
 %% Connect to the database
@@ -228,7 +239,7 @@ final_test_lists = [episodic_lists,  response_schema(size(episodic_lists, 1))];
 
 % Shuffle items within lists, so that pairs aren't given in the same order
 % in all phases
-for i = 1:unique(study_lists.list)
+for i = unique(study_lists.list)'
 
     [new_rows, old_rows] = shuffle_list(study_practice_lists.list, i);
     study_practice_lists(old_rows,:) = sortrows(study_practice_lists(new_rows,:), 'cue_number');
@@ -245,7 +256,7 @@ try
     giveInstructions('intro', inputHandler, window, constants);
     setupTestKBQueue;
 %% Main Loop
-    for i = 1:unique(study_lists.list)
+    for i = unique(study_lists.list)'
 % Study Phase
         countdown('It''s time to study a new list of pairs', constants.studyNewListCountdown, ...
                   constants.countdownSpeed,  window, constants);
@@ -296,11 +307,11 @@ function [window, constants] = windowSetup(constants)
     constants.screenNumber = max(Screen('Screens')); % Choose a monitor to display on
     constants.res=Screen('Resolution',constants.screenNumber); % get screen resolution
     constants.dims = [constants.res.width constants.res.height];
-    if any(constants.debugLevel == [0 1])
+    if strcmp(constants.screenSize, 'small')
     % Set the size of the PTB window based on screen size and debug level
-        constants.screen_scale = [];
-    else
         constants.screen_scale = reshape(round(constants.dims' * [(1/8),(7/8)]), 1, []);
+    else
+        constants.screen_scale = [];
     end
 
     try
