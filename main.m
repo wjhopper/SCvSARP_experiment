@@ -286,35 +286,6 @@ windowCleanup(constants)
 exit_stat=0;
 end % end main()
 
-function overwriteCheck = makeSubjectDataChecker(directory, extension, debugLevel) %#ok<DEFNU>
-    % makeSubjectDataChecker function closer factory, used for the purpose
-    % of enclosing the directory where data will be stored. This way, the
-    % function handle it returns can be used as a validation function with getSubjectInfo to 
-    % prevent accidentally overwritting any data. 
-    function [valid, msg] = subjectDataChecker(value, ~)
-        % the actual validation logic
-        
-        subnum = str2double(value);        
-        if (~isnumeric(subnum) || isnan(subnum)) && ~isnumeric(value);
-            valid = false;
-            msg = 'Subject Number must be greater than 0';
-            return
-        end
-        
-        filePathGlobUpper = fullfile(directory, ['*Subject', value, '*', extension]);
-        filePathGlobLower = fullfile(directory, ['*subject', value, '*', extension]);
-        if ~isempty(dir(filePathGlobUpper)) || ~isempty(dir(filePathGlobLower)) && debugLevel <= 2
-            valid= false;
-            msg = strjoin({'Data file for Subject',  value, 'already exists!'}, ' ');                   
-        else
-            valid= true;
-            msg = 'ok';
-        end
-    end
-
-overwriteCheck = @subjectDataChecker;
-end
-
 function windowCleanup(constants)
     sca; % alias for screen('CloseAll')
     rmpath(constants.lib_dir,constants.root_dir);
