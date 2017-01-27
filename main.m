@@ -169,22 +169,34 @@ constants.debugLevel = input.debugLevel;
 clear input session
 
 %% Get or create the lists for the subject
-if new_subject
 
+if new_subject
     try
         stimuli = get(fetch(exec(db_conn, 'select * from stimuli')), 'Data');
     catch db_error
-       database_error(db_error)
+        rollback_subject(db_conn, constants.subject)
+        database_error(db_error)
     end
 
-    lists = create_lists(stimuli, constants);
-    lists.subject = repmat(constants.subject, size(lists,1), 1);
-    insert(db_conn, 'lists', ...
-           lists.Properties.VariableNames, ...
-           lists);
+    try
+        lists = create_lists(stimuli, constants);
+        lists.subject = repmat(constants.subject, size(lists,1), 1);
+    catch
+        rollback_subject(db_conn, constants.subject)
+    end
+
+    try
+        insert(db_conn, 'lists', ...
+               lists.Properties.VariableNames, ...
+               lists);
+    catch db_error
+        rollback_subject(db_conn, constants.subject)
+        database_error(db_error)
+    end
+
 else
     lists = get(fetch(exec(db_conn, ...
-                           sprintf('select * from lists where subject = ''%d''', ...
+                           sprintf('select * from lists where subject = %d', ...
                                    constants.subject))), ...
                 'Data');
 end
@@ -361,4 +373,8 @@ end
 function [ new_row_ind, old_row_ind ] = shuffle_list(x, list)
     old_row_ind = find(x == list);
     new_row_ind = old_row_ind(randperm(numel(old_row_ind)));
+end
+
+function rollback_subject(db_conn, subject)
+    exec(db_conn, sprintf('delete * from participants where subject = %d', subject));
 end
