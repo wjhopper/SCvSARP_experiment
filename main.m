@@ -130,7 +130,7 @@ while ~valid_input
                                                    'type', 'textinput', ...
                                                    'validationFcn', @validate_email));
         if isempty(guiInput)
-            exit(exit_stat);
+            return;
         else   
             input = filterStructs(guiInput,input);
         end
