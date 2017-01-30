@@ -1,4 +1,4 @@
-function [onset, response, firstPress, lastPress] = testing(data, inputHandler, window, constants, message)
+function [onset, response, firstPress, lastPress, advance] = testing(data, inputHandler, window, constants, message)
 % The onset vector holds the timestamp each trial began (as measured by the
 % sync to the vertical backtrace
 
@@ -43,6 +43,7 @@ onset = nan(size(data,1),1);
 response = cell(size(data,1),1);
 firstPress = nan(size(data,1),1);
 lastPress = nan(size(data,1),1);
+advance = zeros(size(data,1),1); % Enter key sets this to the time it was pressesed, which breaks the while loop
 
 % Get rid of any random prior presses and start recording
 KbQueueFlush;
@@ -52,7 +53,6 @@ for j = 1:size(data,1)
     postpone = 0; % Don't postpone response deadline until the subject interacts
     string = ''; % Start with an empty response string for each target
     rt = []; % Start with an empty RT vector for each target
-    advance = 0; % Enter or right-arrow key can be used to set this to 1, which will break out of the while loop
     if ~isempty(message)
         DrawFormattedText(window, message, constants.leftMargin, constants.winRect(4)*.15, [], 40, [],[],1.5);
     end
@@ -60,7 +60,8 @@ for j = 1:size(data,1)
     vbl = Screen('Flip', window); % Display cue and prompt
     onset(j) = vbl; % record trial onset
 
-    while GetSecs < (onset(j) + constants.testDur + postpone) && ~advance % Until Enter is hit or deadline is reached, wait for input
+    % Until Enter is hit or deadline is reached, wait for input
+    while GetSecs < (onset(j) + constants.testDur + postpone) && ~advance(j)
         % string is the entirity of the subjects response thus far
         [keys_pressed, press_times] = inputHandler(constants.device, data.target{j});
         if ~isempty(keys_pressed)
@@ -70,7 +71,7 @@ for j = 1:size(data,1)
                 switch i
                     case 13 %13 is return
                         if ~isempty(string) % set the advance flag is input has been given
-                            advance = 1;
+                            advance(j) = press_times(i);
                         end
                     case 8 %8 is BACKSPACE
                         % remove the last entered character and its

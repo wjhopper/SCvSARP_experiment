@@ -102,8 +102,8 @@ switch phase_name
         %% Practice block: Test
         giveInstructions('final', inputHandler, window, constants);
         setupTestKBQueue;
-        [On, resp, FP, LP] = testing(final_test_pairs, inputHandler, window, constants, '');
-        final_test_pairs(:,{'onset', 'FP', 'LP','response'}) = table(On,FP,LP,resp);
+        [On, resp, FP, LP, advance] = testing(final_test_pairs, inputHandler, window, constants, '');
+        final_test_pairs(:,{'onset','FP','LP','response','advance'}) = table(On,FP,LP,resp,advance);
         KbQueueRelease;
         
         assert(all(final_test_pairs.FP - final_test_pairs.onset) > 0, ...
@@ -111,9 +111,11 @@ switch phase_name
         assert(all(final_test_pairs.LP - final_test_pairs.FP) > 0, ...
                'Last Press times less than First Press times - this should be impossible!')
         assert(all(diff(final_test_pairs.LP) > 0), ...
-               'Last Press times are decreasing - this should be impossible!');
+               'Last Press times show a decrease - this should be impossible!');
         assert(all(diff(final_test_pairs.FP) > 0), ...
-               'Fist Press times are decreasing - this should be impossible!');
+               'Fist Press times show a decrease - this should be impossible!');
+       assert(all(diff(final_test_pairs.advance) > 0), ...
+               'Advance times show a decrease - this should be impossible!');
         %% Screen
         koi=zeros(1,256);
         koi(KbName('RETURN'))=1;

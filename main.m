@@ -277,12 +277,13 @@ try
 % Test Phase
         giveInstructions('final', inputHandler, window, constants);
         finalIndex = final_test_lists.list == i;
-        [onset, response, FP, LP] = testing(final_test_lists(finalIndex, :), ...
+        [onset, response, FP, LP, advance] = testing(final_test_lists(finalIndex, :), ...
                                             inputHandler, window, constants, '');
         final_test_lists.onset(finalIndex) = onset;
         final_test_lists.response(finalIndex) = response;
         final_test_lists.FP(finalIndex) = FP;
         final_test_lists.LP(finalIndex) = LP;
+        final_test_lists.advance(finalIndex) = advance;
     end
 
 catch error
