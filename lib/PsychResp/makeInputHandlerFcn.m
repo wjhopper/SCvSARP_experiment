@@ -1,19 +1,28 @@
 function handlerFcn = makeInputHandlerFcn(handlerName)
-switch handlerName
-    case 'KbQueue'
-        handlerFcn = @kbQueueHandler;
-    case 'GoodRobot'
-        rob = java.awt.Robot;
-        n = 1;
-        handlerFcn = @GoodRobot;
-    case 'BadRobot'
-        rob = java.awt.Robot;
-        n = 1;
-        handlerFcn = @BadRobot;
-        
+
+valid_types = {'user','freeResponseRobot', 'simpleKeypressRobot'};    
+assert(ismember(handlerName, valid_types), ['"handlerType" argument must be one of the following: ' strjoin(valid_types,', ')])
+
+if ~strcmp(handlerName, 'user')
+
+    rob = java.awt.Robot;   
+    switch handlerName
+        case 'freeResponseRobot'
+            n = 1;
+            handlerFcn = @GoodFreeResponseRobot;
+
+        case 'simpleKeypressRobot'
+            handlerFcn = @GoodSimpleKeypressRobot;
+
+        otherwise
+            error(['Unknown handlerName "' handlerName '"']);            
+    end
+            
+else
+    handlerFcn = @checkKeys;
 end
 
-    function [keys_pressed, press_times] = kbQueueHandler(device, varargin) 
+    function [keys_pressed, press_times] = checkKeys(device, varargin) 
         %
         % The rules of this handler are as follows:
         %
@@ -59,13 +68,19 @@ end
         end
     end
 
-    function [keys_pressed, press_times] = GoodRobot(device, answer, varargin)
+    function [keys_pressed, press_times] = GoodFreeResponseRobot(device, answer, delay)
 
-    % This function is a wrapper around kbQueueHandler, which provides
+    % This function is a wrapper around checkKeys, which provides
     % automatic keyboard input by simulating a keypress of each character in the given response string
     % with Java Robot object instead of waiting for a human.
     %
-    % The tricky bit here is that it doesn't loop over each character in the string,
+    % The tricky bit here is that it doesn't loop over each character in
+    % the string. We want the chance to poll the keyboard queue in between
+    % keypresses, in order to support incremental drawing of the text
+    % string, the way the user would expect it to work. If we did loop over
+    % the answer to "type in", the word would show up all at once, which is
+    % not the way we would want it to work with a human typing responses
+    % in real experiment.
     % Instead, this function is a closure and we share a stateful indexing variable n
     % with the parent function, makeInputHandlerFcn. n starts off set to 1 in the
     % parent function. If n is less than or equal to  the length of the answer,
@@ -80,19 +95,41 @@ end
     % remembered the next time we enter this function (which should be for
     % a new answer to input) and so we begin with inputing the first character of
     % the new answer.
-
+    
+        if nargin < 3
+            delay=0;
+        end
+        
+        if n == 1
+            WaitSecs('UntilTime', GetSecs + delay);
+        end
+        
         if n <= length(answer)
+            WaitSecs('UntilTime', GetSecs + delay/10);
             eval([ 'rob.keyPress(java.awt.event.KeyEvent.VK_', upper(answer(n)), ');' ]);
             eval([ 'rob.keyRelease(java.awt.event.KeyEvent.VK_', upper(answer(n)), ');' ]);
             n = n + 1;
+
         else
             rob.keyPress(java.awt.event.KeyEvent.VK_ENTER);
             rob.keyRelease(java.awt.event.KeyEvent.VK_ENTER);
             n = 1;
         end
-       [keys_pressed, press_times] = kbQueueHandler(device);
+
+       [keys_pressed, press_times] = checkKeys(device);
     end
 
+    function [keys_pressed, press_times] = GoodSimpleKeypressRobot(device, answer, delay)
+   
+        if nargin >= 3
+            WaitSecs('UntilTime', GetSecs + delay);
+        end
+        
+        eval([ 'rob.keyPress(java.awt.event.KeyEvent.VK_', upper(answer(1)), ');' ]);
+        eval([ 'rob.keyRelease(java.awt.event.KeyEvent.VK_', upper(answer(1)), ');' ]);
+
+       [keys_pressed, press_times] = checkKeys(device);
+    end
 
     function [keys_pressed, press_times] = BadRobot(device, varargin)
 
@@ -127,7 +164,7 @@ end
             rob.keyRelease(java.awt.event.KeyEvent.VK_ENTER);           
             n = 1;
         end
-            [keys_pressed, press_times] = kbQueueHandler(device);   
+            [keys_pressed, press_times] = FreeResponse(device);   
     end
 end
 

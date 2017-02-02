@@ -1,4 +1,4 @@
-function [onset, response, firstPress, lastPress, advance] = testing(data, inputHandler, window, constants, message)
+function [onset, response, firstPress, lastPress, advance] = testing(data, decisionHandler, responseHandler, window, constants, message)
 % The onset vector holds the timestamp each trial began (as measured by the
 % sync to the vertical backtrace
 
@@ -31,39 +31,67 @@ function [onset, response, firstPress, lastPress, advance] = testing(data, input
 % first
 % Switch to high priority mode and increase the fontsize
 
-if nargin <= 4
+if nargin <= 5
     message = '';
 end
+
+correct_code = KbName('m');
 
 oldPriority = Priority(1);
 oldsize = Screen('TextSize', window, 40);
 
 % Preallocate the output structures
 onset = nan(size(data,1),1);
-response = cell(size(data,1),1);
+recalled = zeros(size(data,1),1);
+latency = nan(size(data,1),1);
 firstPress = nan(size(data,1),1);
 lastPress = nan(size(data,1),1);
 advance = zeros(size(data,1),1); % Enter key sets this to the time it was pressesed, which breaks the while loop
-
-% Get rid of any random prior presses and start recording
-KbQueueFlush;
-KbQueueStart;
+response = cell(size(data,1),1);
 
 for j = 1:size(data,1)
     postpone = 0; % Don't postpone response deadline until the subject interacts
     string = ''; % Start with an empty response string for each target
     rt = []; % Start with an empty RT vector for each target
+    setupDecisionKBQueue;
     if ~isempty(message)
         DrawFormattedText(window, message, constants.leftMargin, constants.winRect(4)*.15, [], 40, [],[],1.5);
     end
     drawCueTarget(data.cue{j}, '?', window, constants); % Draw cue and prompt
+    DrawFormattedText(window, 'Z = Don''t Remember', constants.winRect(3)*.1, constants.winRect(4)*.9);
+    DrawFormattedText(window, 'M = Remember', 'right', constants.winRect(4)*.9, ...
+                      [],[],[],[],[],[],[0 0 constants.winRect(3)*.9, constants.winRect(4)]); 
     vbl = Screen('Flip', window); % Display cue and prompt
     onset(j) = vbl; % record trial onset
-
+    deadline = vbl + constants.testDur;
+    KbQueueFlush;    
+    KbQueueStart;
+    while GetSecs < deadline && isnan(latency(j))
+        [keys_pressed, press_times] = decisionHandler(constants.device, 'm', .5);
+        if ~isempty(keys_pressed)
+            recalled(j) = keys_pressed(1) == correct_code;
+            latency(j) = press_times(keys_pressed(1));            
+        end
+    end
+    
+    if recalled(j)
+        keys_pressed = []; %#ok<NASGU>
+        drawCueTarget(data.cue{j}, '?', window, constants); % Draw cue and prompt
+        vbl = Screen('Flip', window, vbl + (latency(j)-vbl) + constants.ifi/2); % Display cue and prompt
+        setupTestKBQueue;        
+        KbQueueStart;
+        KbQueueFlush;
+    end
+    
     % Until Enter is hit or deadline is reached, wait for input
-    while GetSecs < (onset(j) + constants.testDur + postpone) && ~advance(j)
+    % In the advance variable, we take advantage of the fact that MATLAB
+    % coerces numbers > 0 to logical trues. This allows us to use advance
+    % to store key press times, as well as control the persistance of the
+    % while loop
+    while ~advance(j) && recalled(j)
         % string is the entirity of the subjects response thus far
-        [keys_pressed, press_times] = inputHandler(constants.device, data.target{j});
+        [keys_pressed, press_times] = responseHandler(constants.device, data.target{j});
+%         tick = GetSecs;
         if ~isempty(keys_pressed)
             % Loop over each recorded keycode. There should ideally be only one,
             % but crazy things can happen
@@ -95,13 +123,13 @@ for j = 1:size(data,1)
                 DrawFormattedText(window, message, constants.leftMargin, constants.winRect(4)*.15, [], 40, [],[],1.5);
             end
             drawCueTarget(data.cue{j}, string, window, constants);
-            vbl = Screen('Flip', window, vbl + (press_times(i) - vbl) + constants.ifi/2);
+            vbl = Screen('Flip', window, vbl + (press_times(i) - vbl) + constants.ifi);
             postpone = postpone + 1;
         end
     end
     [response{j}, firstPress(j), lastPress(j)] = cleanResponses(string, rt);
-    KbQueueFlush;
 end
+
 Screen('TextSize', window, oldsize); % reset text size
 Priority(oldPriority);  % reset priority level
 end

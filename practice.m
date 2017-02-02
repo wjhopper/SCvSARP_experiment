@@ -1,4 +1,4 @@
-function data = practice(test_practice, study_practice, first, inputHandler, window, constants)
+function data = practice(test_practice, study_practice, first, decisionHandler, inputHandler, window, constants)
 
     if strcmp('S', first)
         % Study
@@ -8,12 +8,12 @@ function data = practice(test_practice, study_practice, first, inputHandler, win
         % Then retest
         countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);    
-        [onset, response, firstPress, lastPress] = testing(test_practice, inputHandler, window, constants);
+        [onset, response, firstPress, lastPress] = testing(test_practice, decisionHandler, inputHandler, window, constants);
     else
         % Test
         countdown('It''s time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        [onset, response, firstPress, lastPress] = testing(test_practice, inputHandler, window, constants);
+        [onset, response, firstPress, lastPress] = testing(test_practice, decisionHandler, inputHandler, window, constants);
         % Then Restudy
         countdown('It''s time to restudy some words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);

@@ -61,7 +61,8 @@ if input.debugLevel >= 0
     constants.readtime=10;
     constants.countdownSpeed = 1;
     constants.ISI = .5;
-    inputHandler = makeInputHandlerFcn('KbQueue');
+    responseHandler = makeInputHandlerFcn('user');
+    decisionHandler = responseHandler;
     constants.device = [];
 end
 
@@ -85,8 +86,8 @@ end
 % Level 4: Robot input, Large Screen
 if input.debugLevel >= 4
     constants.screenSize = 'full';    
-    inputHandler = makeInputHandlerFcn([input.robotType,'Robot']);
-    constants.Robot = java.awt.Robot;
+    responseHandler = makeInputHandlerFcn('freeResponseRobot');
+    decisionHandler = makeInputHandlerFcn('simpleKeypressRobot');
 end
 
 % Level 5: Extreme debugging, useful for knowing if flips are timed ok.
@@ -253,8 +254,8 @@ end
 
 try
     [window, constants] = windowSetup(constants);
-    giveInstructions('intro', inputHandler, window, constants);
-    setupTestKBQueue;
+    giveInstructions('intro', decisionHandler, responseHandler, window, constants);
+
 %% Main Loop
     for i = unique(study_lists.list)'
 % Study Phase
@@ -272,18 +273,18 @@ try
         SPindex = study_practice_lists.list == i;
         TPindex = test_practice_lists.list == i;
         practice(study_practice_lists(SPindex,:), test_practice_lists(TPindex, :), ...
-                 first, inputHandler, window, constants);
+                 first, decisionHandler, responseHandler, window, constants);
 
 % Test Phase
-        giveInstructions('final', inputHandler, window, constants);
+        giveInstructions('final',[], responseHandler, window, constants);
         finalIndex = final_test_lists.list == i;
-        [onset, response, FP, LP, advance] = testing(final_test_lists(finalIndex, :), ...
-                                            inputHandler, window, constants, '');
+        [onset, resp, FP, LP, adv] = testing(final_test_lists(finalIndex, :), ...
+                                             decisionHandler, responseHandler, window, constants, '');
         final_test_lists.onset(finalIndex) = onset;
-        final_test_lists.response(finalIndex) = response;
+        final_test_lists.response(finalIndex) = resp;
         final_test_lists.FP(finalIndex) = FP;
         final_test_lists.LP(finalIndex) = LP;
-        final_test_lists.advance(finalIndex) = advance;
+        final_test_lists.advance(finalIndex) = adv;
     end
 
 catch error
@@ -293,7 +294,7 @@ end
 
 %% end of the experiment %%
 KbQueueRelease;
-giveInstructions('bye', [], window, constants);
+giveInstructions('bye', [], [], window, constants);
 windowCleanup(constants)
 exit_stat=0;
 end % end main()
