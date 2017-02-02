@@ -272,15 +272,19 @@ try
         end
         SPindex = study_practice_lists.list == i;
         TPindex = test_practice_lists.list == i;
-        practice(study_practice_lists(SPindex,:), test_practice_lists(TPindex, :), ...
-                 first, decisionHandler, responseHandler, window, constants);
+        [TPdata, SPdata] = practice(study_practice_lists(SPindex,:), test_practice_lists(TPindex, :), ...
+                                   first, decisionHandler, responseHandler, window, constants);
+        study_practice_lists(SPindex,:) = SPdata;
+        test_practice_lists(TPindex, :) = TPdata;
 
 % Test Phase
         giveInstructions('final',[], responseHandler, window, constants);
         finalIndex = final_test_lists.list == i;
-        [onset, resp, FP, LP, adv] = testing(final_test_lists(finalIndex, :), ...
-                                             decisionHandler, responseHandler, window, constants, '');
+        [onset, recalled, latency, resp, FP, LP, adv] = testing(final_test_lists(finalIndex, :), ...
+                                                                decisionHandler, responseHandler, window, constants, '');
         final_test_lists.onset(finalIndex) = onset;
+        final_test_lists.recalled(finalIndex) = recalled;
+        final_test_lists.latency(finalIndex) = latency;
         final_test_lists.response(finalIndex) = resp;
         final_test_lists.FP(finalIndex) = FP;
         final_test_lists.LP(finalIndex) = LP;

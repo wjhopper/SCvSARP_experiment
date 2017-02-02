@@ -101,8 +101,8 @@ switch phase_name
 
         %% Practice block: Test
         giveInstructions('final', decisionHandler, responseHandler, window, constants);
-        [On, resp, FP, LP, advance] = testing(final_test_pairs, decisionHandler, responseHandler, window, constants, '');
-        final_test_pairs(:,{'onset','FP','LP','response','advance'}) = table(On,FP,LP,resp,advance);
+        [On, recall, latency, resp, FP, LP, adv] = testing(final_test_pairs, decisionHandler, responseHandler, window, constants, '');
+        final_test_pairs(:,{'onset','recalled','latency','FP','LP','response','advance'}) = table(On,recall,latency,FP,LP,resp,adv);
         KbQueueRelease;
         
         assert(all(final_test_pairs.FP(~isnan(final_test_pairs.FP)) - final_test_pairs.onset(~isnan(final_test_pairs.FP)) > 0), ...

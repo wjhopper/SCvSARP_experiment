@@ -1,4 +1,4 @@
-function [onset, response, firstPress, lastPress, advance] = testing(data, decisionHandler, responseHandler, window, constants, message)
+function [onset, recalled, latency, response, firstPress, lastPress, advance] = testing(data, decisionHandler, responseHandler, window, constants, message)
 % The onset vector holds the timestamp each trial began (as measured by the
 % sync to the vertical backtrace
 
