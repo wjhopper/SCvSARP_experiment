@@ -24,7 +24,7 @@ COPY stimuli(target, semantic_cue_1, semantic_cue_2, semantic_cue_3, episodic_cu
 FROM 'C:\Users\will\source\FAM_SARP_experiment\db\stimuli_table.csv' DELIMITER ',' CSV HEADER;
 
 CREATE TABLE lists (
-  subject smallint references participants(subject) NOT NULL,
+  subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
   id smallint NOT NULL references stimuli(id),
   target character varying(12) NOT NULL,
   semantic_cue_1 character varying(12) NOT NULL,
@@ -38,6 +38,65 @@ CREATE TABLE lists (
 );
 
 CREATE INDEX ON lists(session);
+
+CREATE TABLE study (
+  subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
+  session smallint NOT NULL,
+  list smallint NOT NULL,
+  id smallint NOT NULL references stimuli(id),
+  cue character varying(12) NOT NULL,
+  target character varying(12) NOT NULL,
+  onset double precision NOT NULL,
+  PRIMARY KEY(subject, id)
+);
+
+CREATE TABLE study_practice (
+  subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
+  session smallint NOT NULL,
+  list smallint NOT NULL,
+  id smallint NOT NULL references stimuli(id),
+  cue_number smallint NOT NULL,
+  cue character varying(12) NOT NULL,
+  target character varying(12) NOT NULL,
+  practice  character varying(1) NOT NULL,
+  onset double precision NOT NULL
+);
+
+
+CREATE TABLE test_practice (
+  subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
+  session smallint NOT NULL,
+  list smallint NOT NULL,
+  id smallint NOT NULL references stimuli(id),
+  cue_number smallint NOT NULL,
+  cue character varying(12) NOT NULL,
+  target character varying(12) NOT NULL,
+  practice  character varying(1) NOT NULL,
+  onset double precision NOT NULL,
+  recalled smallint NOT NULL,
+  latency double precision,
+  FP double precision,
+  LP double precision,
+  advance double precision,
+  response character varying(20)
+);
+
+CREATE TABLE final_test (
+  subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
+  session smallint NOT NULL,
+  list smallint NOT NULL,
+  id smallint NOT NULL references stimuli(id),
+  cue character varying(12) NOT NULL,
+  target character varying(12) NOT NULL,
+  onset double precision NOT NULL,
+  recalled smallint NOT NULL,
+  latency double precision,
+  FP double precision,
+  LP double precision,
+  advance double precision,
+  response character varying(20),
+  PRIMARY KEY(subject, id)
+);
 
 CREATE ROLE will LOGIN;
 GRANT ALL PRIVILEGES ON DATABASE "fam_sarp" TO will;

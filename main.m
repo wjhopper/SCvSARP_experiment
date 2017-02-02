@@ -216,16 +216,16 @@ end
 %% Construct the datasets that will govern stimulus presentation 
 % and have responses stored in them
 episodic_lists = lists(lists.session == constants.current_session, ...
-                       {'list', 'id', 'episodic_cue', 'target'});
+                       {'subject','session','list', 'id', 'episodic_cue', 'target'});
 episodic_lists.Properties.VariableNames{'episodic_cue'} = 'cue';
 
 semantic_lists = lists(lists.session == constants.current_session, ...
-                       {'list','id','semantic_cue_1', 'semantic_cue_2', ...
-                        'semantic_cue_3', 'target', 'practice'});
+                       {'subject','session', 'list','id', 'semantic_cue_1', ...
+                       'semantic_cue_2', 'semantic_cue_3', 'target', 'practice'});
 semantic_lists = stack(semantic_lists, {'semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3'}, ...
                        'NewDataVariableName','cue', 'IndexVariableName', 'cue_number');
 semantic_lists.cue_number = cellfun(@(x) str2double(x(end)), cellstr(semantic_lists.cue_number));
-semantic_lists = semantic_lists(:, {'list','id','cue_number','cue','target','practice'});
+semantic_lists = semantic_lists(:, {'subject','session','list','id','cue_number','cue','target','practice'});
 
 study_lists = [episodic_lists, table(nan(size(episodic_lists, 1), 1), 'VariableNames', {'onset'})];
 
@@ -300,6 +300,31 @@ end
 KbQueueRelease;
 giveInstructions('bye', [], [], window, constants);
 windowCleanup(constants)
+
+try
+    insert(db_conn, 'study', ...
+           study_lists.Properties.VariableNames, ...
+           study_lists);
+
+    insert(db_conn, 'study_practice', ...
+           study_practice_lists.Properties.VariableNames, ...
+           study_practice_lists);
+
+    test_practice_lists.response = cellfun(@(x) x(1:min(20,length(x))), test_practice_lists.response, ...
+                                           'UniformOutput', false);
+    insert(db_conn, 'test_practice', ...
+           test_practice_lists.Properties.VariableNames, ...
+           test_practice_lists);
+
+    final_test_lists.response = cellfun(@(x) x(1:min(20,length(x))), final_test_lists.response, ...
+                                           'UniformOutput', false);
+    insert(db_conn, 'final_test', ...
+           final_test_lists.Properties.VariableNames, ...
+           final_test_lists);
+
+catch db_error
+    database_error(db_error)
+end   
 exit_stat=0;
 end % end main()
 
