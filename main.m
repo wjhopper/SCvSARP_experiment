@@ -3,7 +3,8 @@ function exit_stat = main(varargin)
 exit_stat = 1; % assume that we exited badly if ever exit before this gets reassigned
 
 if Screen('NominalFrameRate', max(Screen('Screens'))) ~= 60
-    errordlg('Monitor refresh rate must be set to 60hz');
+    h = errordlg('Monitor refresh rate must be set to 60hz');
+    uiwait(h)
     return;
 end
 
