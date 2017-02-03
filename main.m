@@ -385,7 +385,7 @@ function [window, constants] = windowSetup(constants)
         constants.wrapat = 65; % line length
         constants.spacing=35;
         constants.leftMargin = constants.winRect(3)/5;
-
+    HideCursor(constants.screenNumber);
     catch
         windowCleanup(constants)
         psychrethrow(psychlasterror);
