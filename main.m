@@ -38,9 +38,9 @@ constants.list_length = 18;
 constants.conditions = {'S', 'T', 'N'};
 constants.n_sessions = 3;
 constants.practiceCountdown = 3;
-constants.finalTestCountdown = 5;
+constants.finalTestCountdown = 3;
 constants.finalTestBreakCountdown = 10;
-constants.studyNewListCountdown = 5;
+constants.studyNewListCountdown = 3;
 constants.gamebreakCountdown = 5;
 
 assert(mod(constants.list_length, length(constants.conditions)) == 0, ...
