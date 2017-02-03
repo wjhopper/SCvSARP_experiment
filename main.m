@@ -73,7 +73,7 @@ if input.debugLevel >= 1
     constants.cueDur = 1; % pairs on screen for the length of 60 flip intervals
     constants.testDur = 5;
     constants.readtime = constants.cueDur;
-    constants.math=.5;
+    constants.math_display =.5;
     constants.math_wait = 2.5;
 end
 

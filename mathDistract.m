@@ -10,7 +10,7 @@ function mathDistract(n_problems, window, responseHandler, constants)
         for i = nums(1:6)
             DrawFormattedText(window, num2str(i),'center', 'center');
             vbl = Screen('Flip', window);
-            WaitSecs('UntilTime', GetSecs + constants.math);
+            WaitSecs('UntilTime', GetSecs + constants.math_display);
         end
         answer = int2str(sum(nums(1:6)));
         string = '';
