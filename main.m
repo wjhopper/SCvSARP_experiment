@@ -64,6 +64,8 @@ if input.debugLevel >= 0
     responseHandler = makeInputHandlerFcn('user');
     decisionHandler = responseHandler;
     constants.device = [];
+    constants.math_display = 1.5;
+    constants.math_wait = 5;
 end
 
 % Level 1: Fast Stim durations, readtimes & breaks
@@ -71,6 +73,8 @@ if input.debugLevel >= 1
     constants.cueDur = 1; % pairs on screen for the length of 60 flip intervals
     constants.testDur = 5;
     constants.readtime = constants.cueDur;
+    constants.math=.5;
+    constants.math_wait = 2.5;
 end
 
 % Level 2: Fast countdowns
@@ -263,6 +267,9 @@ try
                   constants.countdownSpeed,  window, constants);
         studyIndex = study_lists.list == i;
         study_lists.onset(studyIndex) = study(study_lists(studyIndex, :), window, constants);
+% Math Distractor
+        mathDistract(2, window, responseHandler, constants)
+
 % Practice Phase
         % Counterbalance study/test practice order between lists
         if mod(i, 2) == 0
@@ -277,6 +284,9 @@ try
         study_practice_lists(SPindex,:) = SPdata;
         test_practice_lists(TPindex, :) = TPdata;
 
+% Math Distractor
+        mathDistract(4, window, responseHandler, constants)
+
 % Test Phase
         giveInstructions('final',[], responseHandler, window, constants);
         finalIndex = final_test_lists.list == i;
@@ -289,6 +299,7 @@ try
         final_test_lists.FP(finalIndex) = FP;
         final_test_lists.LP(finalIndex) = LP;
         final_test_lists.advance(finalIndex) = adv;
+
     end
 
 catch error
