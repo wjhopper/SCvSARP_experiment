@@ -93,6 +93,7 @@ switch phase_name
         practice(study_practice_pairs, test_practice_pairs, 'S', decisionHandler, responseHandler, window, constants);        
 
         %% Screen
+        KbQueueCreate;
         text = ['After the practice phase, there will be another brief delay, followed by a final memory test.',...
                 '\n\nOn this test, you will be prompted using the left-hand side words from the original study list (not the related words from the practice phase).', ...
                 '\n\nFor example, you would be prompted with "library - ?" and "foam - ?" to recall "oval" and "camera".'];
@@ -108,7 +109,6 @@ switch phase_name
         giveInstructions('final', decisionHandler, responseHandler, window, constants);
         [On, recall, latency, resp, FP, LP, adv] = testing(final_test_pairs, decisionHandler, responseHandler, window, constants, '');
         final_test_pairs(:,{'onset','recalled','latency','FP','LP','response','advance'}) = table(On,recall,latency,FP,LP,resp,adv);
-        KbQueueRelease;
         
         assert(all(final_test_pairs.FP(~isnan(final_test_pairs.FP)) - final_test_pairs.onset(~isnan(final_test_pairs.FP)) > 0), ...
                'First Press times less than onset times - this should be impossible!')        

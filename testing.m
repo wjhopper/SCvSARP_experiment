@@ -64,11 +64,11 @@ for j = 1:size(data,1)
     vbl = Screen('Flip', window); % Display cue and prompt
     onset(j) = vbl; % record trial onset
     deadline = vbl + constants.testDur;
-    KbQueueFlush;    
     KbQueueStart;
     while GetSecs < deadline && isnan(latency(j))
         [keys_pressed, press_times] = decisionHandler(constants.device, 'm', .5);
         if ~isempty(keys_pressed)
+            KbQueueStop;
             recalled(j) = keys_pressed(1) == correct_code;
             latency(j) = press_times(keys_pressed(1));            
         end
@@ -80,7 +80,6 @@ for j = 1:size(data,1)
         vbl = Screen('Flip', window, vbl + (latency(j)-vbl) + constants.ifi/2); % Display cue and prompt
         setupTestKBQueue;        
         KbQueueStart;
-        KbQueueFlush;
     end
     
     % Until Enter is hit or deadline is reached, wait for input
@@ -127,9 +126,11 @@ for j = 1:size(data,1)
             postpone = postpone + 1;
         end
     end
+
+    KbQueueStop;    
     [response{j}, firstPress(j), lastPress(j)] = cleanResponses(string, rt);
 end
-
+KbQueueRelease;
 Screen('TextSize', window, oldsize); % reset text size
 Priority(oldPriority);  % reset priority level
 end
