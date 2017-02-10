@@ -1,6 +1,6 @@
 function mathDistract(n_problems, window, responseHandler, constants)
 
-    countdown('Now try to solve these 2 addition problems starting in', constants.practiceCountdown,...
+    countdown(['Now try to solve these ' num2str(n_problems) ' addition problems starting in'], constants.practiceCountdown,...
               constants.countdownSpeed,  window, constants);
     oldsize = Screen('TextSize', window, 40);          
     setupNumericKBQueue;
