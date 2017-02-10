@@ -8,12 +8,12 @@ function [test_practice, study_practice] = practice(study_practice, test_practic
         % Then retest
         countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);    
-        [onset, recalled, latency, response, firstPress, lastPress, adv] = testing(test_practice, decisionHandler, inputHandler, window, constants);
+        [onset, recalled, latency, response, firstPress, lastPress, adv] = testing(test_practice, decisionHandler, inputHandler, window, constants, '', true);
     else
         % Test
         countdown('It''s time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        [onset, recalled, latency, response, firstPress, lastPress, adv] = testing(test_practice, decisionHandler, inputHandler, window, constants);
+        [onset, recalled, latency, response, firstPress, lastPress, adv] = testing(test_practice, decisionHandler, inputHandler, window, constants, '', true);
         % Then Restudy
         countdown('It''s time to restudy some words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);

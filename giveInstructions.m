@@ -70,9 +70,9 @@ switch phase_name
         listen(responseHandler, constants, '');
 
         %% Screen
-        text = ['On the practice test, the word you need to remember will be missing. Use the related word on the left to help you remember it.',...
+        text = ['On the practice test, you will only be shown the first letter of word you need to remember. Use the related word on the left to help you remember it.',...
                 '\n\nFor example, if you were taking a practice test to help you remember the word "camera", you might ',...
-                'be prompted to recall "camera" with "film - ?", "flash - ?" and "video - ?".'];
+                'be prompted to recall "camera" with "film - C____ ?", "flash - C____ ?" and "video - C____ ?".'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
         listen(responseHandler, constants, '');
 
@@ -107,7 +107,7 @@ switch phase_name
         
         %% Practice block: Test
         giveInstructions('final', decisionHandler, responseHandler, window, constants);
-        [On, recall, latency, resp, FP, LP, adv] = testing(final_test_pairs, decisionHandler, responseHandler, window, constants, '');
+        [On, recall, latency, resp, FP, LP, adv] = testing(final_test_pairs, decisionHandler, responseHandler, window, constants, '',false);
         final_test_pairs(:,{'onset','recalled','latency','FP','LP','response','advance'}) = table(On,recall,latency,FP,LP,resp,adv);
         
         assert(all(final_test_pairs.FP(~isnan(final_test_pairs.FP)) - final_test_pairs.onset(~isnan(final_test_pairs.FP)) > 0), ...

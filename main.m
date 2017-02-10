@@ -292,7 +292,7 @@ try
         giveInstructions('final',[], responseHandler, window, constants);
         finalIndex = final_test_lists.list == i;
         [onset, recalled, latency, resp, FP, LP, adv] = testing(final_test_lists(finalIndex, :), ...
-                                                                decisionHandler, responseHandler, window, constants, '');
+                                                                decisionHandler, responseHandler, window, constants, '', false);
         final_test_lists.onset(finalIndex) = onset;
         final_test_lists.recalled(finalIndex) = recalled;
         final_test_lists.latency(finalIndex) = latency;
@@ -300,7 +300,6 @@ try
         final_test_lists.FP(finalIndex) = FP;
         final_test_lists.LP(finalIndex) = LP;
         final_test_lists.advance(finalIndex) = adv;
-
     end
 
 catch error

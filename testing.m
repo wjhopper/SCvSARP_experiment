@@ -1,4 +1,4 @@
-function [onset, recalled, latency, response, firstPress, lastPress, advance] = testing(data, decisionHandler, responseHandler, window, constants, message)
+function [onset, recalled, latency, response, firstPress, lastPress, advance] = testing(data, decisionHandler, responseHandler, window, constants, message, first_letter)
 % The onset vector holds the timestamp each trial began (as measured by the
 % sync to the vertical backtrace
 
@@ -57,7 +57,12 @@ for j = 1:size(data,1)
     if ~isempty(message)
         DrawFormattedText(window, message, constants.leftMargin, constants.winRect(4)*.15, [], 40, [],[],1.5);
     end
-    drawCueTarget(data.cue{j}, '?', window, constants); % Draw cue and prompt
+    if first_letter
+        prompt = [data.target{j}(1) '______ ?'];
+    else
+        prompt = '?';
+    end
+    drawCueTarget(data.cue{j}, prompt, window, constants); % Draw cue and prompt
     DrawFormattedText(window, 'Z = Don''t Remember', constants.winRect(3)*.1, constants.winRect(4)*.9);
     DrawFormattedText(window, 'M = Remember', 'right', constants.winRect(4)*.9, ...
                       [],[],[],[],[],[],[0 0 constants.winRect(3)*.9, constants.winRect(4)]); 
@@ -76,7 +81,7 @@ for j = 1:size(data,1)
     
     if recalled(j)
         keys_pressed = []; %#ok<NASGU>
-        drawCueTarget(data.cue{j}, '?', window, constants); % Draw cue and prompt
+        drawCueTarget(data.cue{j}, prompt, window, constants); % Draw cue and prompt
         vbl = Screen('Flip', window, vbl + (latency(j)-vbl) + constants.ifi/2); % Display cue and prompt
         setupTestKBQueue;        
         KbQueueStart;
@@ -90,7 +95,6 @@ for j = 1:size(data,1)
     while ~advance(j) && recalled(j)
         % string is the entirity of the subjects response thus far
         [keys_pressed, press_times] = responseHandler(constants.device, data.target{j});
-%         tick = GetSecs;
         if ~isempty(keys_pressed)
             % Loop over each recorded keycode. There should ideally be only one,
             % but crazy things can happen
@@ -121,7 +125,12 @@ for j = 1:size(data,1)
             if ~isempty(message)
                 DrawFormattedText(window, message, constants.leftMargin, constants.winRect(4)*.15, [], 40, [],[],1.5);
             end
-            drawCueTarget(data.cue{j}, string, window, constants);
+            if first_letter
+                prompt = [data.target{j}(1) string];
+            else
+                prompt = string;
+            end
+            drawCueTarget(data.cue{j}, prompt, window, constants);
             vbl = Screen('Flip', window, vbl + (press_times(i) - vbl) + constants.ifi);
             postpone = postpone + 1;
         end
