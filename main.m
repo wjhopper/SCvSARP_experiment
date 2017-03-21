@@ -115,7 +115,7 @@ setdbprefs('ErrorHandling', 'report'); % Throw runtime errors when a db error oc
 
 try
     % instance must be a predefined datasource at the OS level
-    db_conn = database.ODBCConnection('fam_sarp', 'will', ''); % Connect to the db
+    db_conn = database('fam_sarp', 'will', ''); % Connect to the db
 catch db_error
     database_error(db_error)
 end
@@ -333,9 +333,16 @@ try
            final_test_lists.Properties.VariableNames, ...
            final_test_lists);
 
+    % Update the number of sessions completed
+    update(db_conn, ...
+           'participants', ...
+           {'sessions_completed'}, ...
+           constants.current_session, ...
+           sprintf('WHERE subject = %d', constants.subject));
 catch db_error
     database_error(db_error)
-end   
+end
+
 exit_stat=0;
 end % end main()
 
