@@ -157,7 +157,6 @@ while ~valid_input
     if strcmp(session, 'No Data')
         valid_input = confirmation_dialog(input.email, 0);
         if valid_input
-            new_subject = true;
             try
                 insert(db_conn, 'participants', ...
                        {'email', '"group"', 'sessions_completed', 'rng_seed', 'computer'}, ...
@@ -174,7 +173,6 @@ while ~valid_input
 
     else
         valid_input = confirmation_dialog(input.email, session.sessions_completed);
-        new_subject = false;
     end
     
     if ~valid_input && ~ismember('email', defaults)
@@ -192,7 +190,7 @@ clear input session
 
 %% Get or create the lists for the subject
 
-if new_subject
+if constants.current_session == 1
     try
         stimuli = get(fetch(exec(db_conn, 'select * from stimuli')), 'Data');
     catch db_error
