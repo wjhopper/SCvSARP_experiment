@@ -115,7 +115,7 @@ setdbprefs('ErrorHandling', 'report'); % Throw runtime errors when a db error oc
 
 try
     % instance must be a predefined datasource at the OS level
-    db_conn = database('fam_sarp', 'will', ''); % Connect to the db
+    db_conn = database('SCvSARP', 'will', ''); % Connect to the db
 catch db_error
     database_error(db_error)
 end
