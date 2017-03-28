@@ -447,5 +447,5 @@ function [ new_row_ind, old_row_ind ] = shuffle_list(x, list)
 end
 
 function rollback_subject(db_conn, subject)
-    exec(db_conn, sprintf('delete * from participants where subject = %d', subject));
+    exec(db_conn, sprintf('delete from participants where subject = %d', subject));
 end
