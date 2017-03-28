@@ -3,6 +3,7 @@ CREATE DATABASE FAM_SCvSARP;
 
 CREATE TABLE participants (
   subject smallserial NOT NULL,
+  "group" character varying(9) NOT NULL,
   email character varying(40) UNIQUE NOT NULL,
   sessions_completed smallint NOT NULL,
   rng_seed bigint NOT NULL,

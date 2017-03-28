@@ -8,11 +8,18 @@ if Screen('NominalFrameRate', max(Screen('Screens'))) ~= 60
     return;
 end
 
+% Seet the rng with the current time
+rng('shuffle');
+% retrieve the rng state once it has been seeded
+rng_state = rng;
+
 % use the inputParser class to deal with arguments
 ip = inputParser;
 %#ok<*NVREPL> dont warn about addParamValue
 addParamValue(ip,'email', 'will@fake.com', @validate_email);
 addParamValue(ip,'sessions_completed', 0, @(x) x <= 3);% # sessions must be kept in sync with constants.n_sessions
+groups = {'immediate','delay'};
+addParamValue(ip,'group', groups{randsample(length(groups),1)}, @(x) validatestring(x, groups));
 addParamValue(ip,'debugLevel',0, @(x) isnumeric(x) && x >= 0);
 addParamValue(ip,'robotType', 'Good', @(x) sum(strcmp(x, {'Good','Bad','Chaotic'}))==1)
 parse(ip,varargin{:}); 
@@ -25,7 +32,7 @@ path(path,constants.root_dir);
 constants.lib_dir = fullfile(constants.root_dir, 'lib');
 path(path, genpath(constants.lib_dir));
 
-% Make the data directory if it doesn't exist (but it should!)
+% Make the data directory if it doesn't exist
 if ~exist(fullfile(constants.root_dir, 'data'), 'dir')
     mkdir(fullfile(constants.root_dir, 'data'));
 end
@@ -137,7 +144,7 @@ while ~valid_input
                                                    'validationFcn', @validate_email));
         if isempty(guiInput)
             return;
-        else   
+        else
             input = filterStructs(guiInput,input);
         end
     end
@@ -151,15 +158,10 @@ while ~valid_input
         valid_input = confirmation_dialog(input.email, 0);
         if valid_input
             new_subject = true;
-            % Seet the rng with the current time
-            rng('shuffle');
-            % retrieve the rng state once it has been seeded
-            rng_state = rng;
-            hostname = getenv('COMPUTERNAME');
             try
                 insert(db_conn, 'participants', ...
-                       {'email', 'sessions_completed', 'rng_seed', 'computer'}, ...
-                       {input.email, 0, double(rng_state.Seed), hostname});
+                       {'email', '"group"', 'sessions_completed', 'rng_seed', 'computer'}, ...
+                       {input.email, input.group, 0, double(rng_state.Seed), getenv('COMPUTERNAME')});
                % Retrieve the info the database assigns
                 session = get(fetch(exec(db_conn, ...
                                          sprintf('select * from participants where email like ''%s''', ...
