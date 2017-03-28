@@ -151,12 +151,15 @@ while ~valid_input
         valid_input = confirmation_dialog(input.email, 0);
         if valid_input
             new_subject = true;
+            % Seet the rng with the current time
             rng('shuffle');
+            % retrieve the rng state once it has been seeded
             rng_state = rng;
+            hostname = getenv('COMPUTERNAME');
             try
                 insert(db_conn, 'participants', ...
-                       {'email', 'sessions_completed', 'rng_seed'}, ...
-                       {input.email, 0, double(rng_state.Seed)});
+                       {'email', 'sessions_completed', 'rng_seed', 'computer'}, ...
+                       {input.email, 0, double(rng_state.Seed), hostname});
                % Retrieve the info the database assigns
                 session = get(fetch(exec(db_conn, ...
                                          sprintf('select * from participants where email like ''%s''', ...
