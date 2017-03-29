@@ -222,44 +222,63 @@ else
                 'Data');
 end
 
-%% Construct the datasets that will govern stimulus presentation 
-% and have responses stored in them
-episodic_lists = lists(lists.session == constants.current_session, ...
-                       {'subject','session','list', 'id', 'episodic_cue', 'target'});
-episodic_lists.Properties.VariableNames{'episodic_cue'} = 'cue';
+%% Create Study Lists
+study_lists = lists(lists.session == constants.current_session, ...
+                    {'subject','session','list', 'id', 'episodic_cue', 'target'});
+study_lists.Properties.VariableNames{'episodic_cue'} = 'cue';
+study_lists.onset = nan(size(study_lists, 1),1);
+study_lists.trial = (1:size(study_lists, 1))';
 
-semantic_lists = lists(lists.session == constants.current_session, ...
-                       {'subject','session', 'list','id', 'semantic_cue_1', ...
-                       'semantic_cue_2', 'semantic_cue_3', 'target', 'practice'});
-semantic_lists = stack(semantic_lists, {'semantic_cue_1', 'semantic_cue_2', 'semantic_cue_3'}, ...
-                       'NewDataVariableName','cue', 'IndexVariableName', 'cue_number');
-semantic_lists.cue_number = cellfun(@(x) str2double(x(end)), cellstr(semantic_lists.cue_number));
-semantic_lists = semantic_lists(:, {'subject','session','list','id','cue_number','cue','target','practice'});
+%% Create Practice Lists, for each type of practice
+practice_items = ~strcmp(lists.practice, 'N');
+n_practice_items = sum(practice_items);
+practice_lists = [lists(practice_items, :) ...
+                  table(nan(n_practice_items, 1), ...
+                        cell(n_practice_items, 1), ...
+                        (1:n_practice_items)', ...
+                        'VariableNames', {'onset', 'cue', 'trial'})];
 
-study_lists = [episodic_lists, table(nan(size(episodic_lists, 1), 1), 'VariableNames', {'onset'})];
-
-restudy_pairs = strcmp(semantic_lists.practice, 'S');
-study_practice_lists = [semantic_lists(restudy_pairs,:), ...
-                        table(nan(sum(restudy_pairs), 1),'VariableNames', {'onset'})];
-
-test_pairs = strcmp(semantic_lists.practice, 'T');
-test_practice_lists = [semantic_lists(test_pairs,:), response_schema(sum(test_pairs))];
-
-final_test_lists = [episodic_lists,  response_schema(size(episodic_lists, 1))];
-
-% Shuffle items within lists, so that pairs aren't given in the same order
-% in all phases
-for i = unique(study_lists.list)'
-
-    [new_rows, old_rows] = shuffle_list(study_practice_lists.list, i);
-    study_practice_lists(old_rows,:) = sortrows(study_practice_lists(new_rows,:), 'cue_number');
-
-    [new_rows, old_rows] = shuffle_list(test_practice_lists.list, i);
-    test_practice_lists(old_rows,:) = sortrows(test_practice_lists(new_rows,:), 'cue_number');
-
-    [new_rows, old_rows] = shuffle_list(final_test_lists.list, i);
-    final_test_lists(old_rows,:) = final_test_lists(new_rows,:);
+for i=1:size(practice_lists, 1)
+    if strcmp(practice_lists(i,'cue_type'), 'episodic')
+        c = practice_lists(i,'episodic_cue');
+    else
+        c = practice_lists(i,'semantic_cue');
+    end
+    practice_lists(i,'cue') = c;
 end
+% Drop the episodic_cue and semantic_cue columns, they've been merged to
+% the "cue" column based on trial type.
+practice_lists = practice_lists(:, {'subject','session','list','id','cue_type','practice','cue','target','onset','trial'});
+
+%% Final Test Lists
+final_test_lists = [study_lists,  response_schema(size(study_lists, 1))];
+
+% Shuffle items within lists, so that pairs aren't given in the same order in all phases
+for i = unique(study_lists.list)'    
+    rows = practice_lists.list == i;
+    practice_lists(rows,:) = practice_lists(randsample(practice_lists.trial(rows), sum(rows)),:);
+    rows = final_test_lists.list == i;
+    final_test_lists(rows,:) = final_test_lists(randsample(final_test_lists.trial(rows), sum(rows)),:);
+end
+
+% Adjust the trial order variable back to sequential
+x = reshape(bsxfun(@plus, repmat((1:8)',1,6), 16*(0:5)), [], 1);
+restudy_trials = strcmp(practice_lists.practice, 'T');
+test_trials = strcmp(practice_lists.practice, 'S');
+
+if mod(constants.subject, 2) == 0
+    % if the subject number is ever, restudy trials are first
+    practice_lists.trial(restudy_trials) = x;
+    practice_lists.trial(test_trials) = x + 8;
+else
+    practice_lists.trial(test_trials) = x;
+    practice_lists.trial(restudy_trials) = x + 8;
+end
+practice_lists = sortrows(practice_lists, {'list','trial'});
+study_practice_lists = practice_lists(restudy_trials,:);
+test_practice_lists = [practice_lists(test_trials, :), response_schema(sum(test_trials))];
+
+final_test_lists.trial = (1:size(final_test_lists, 1))';
 
 try
     [window, constants] = windowSetup(constants);
@@ -438,11 +457,6 @@ function accept = confirmation_dialog(email, sessions_completed)
                      'Confirm Subject Info', ...
                      'No', 'Yes', 'No');
     accept = strcmp(resp, 'Yes');
-end
-
-function [ new_row_ind, old_row_ind ] = shuffle_list(x, list)
-    old_row_ind = find(x == list);
-    new_row_ind = old_row_ind(randperm(numel(old_row_ind)));
 end
 
 function rollback_subject(db_conn, subject)

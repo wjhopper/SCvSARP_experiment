@@ -41,6 +41,7 @@ CREATE INDEX ON lists(session);
 CREATE TABLE study (
   subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
   session smallint NOT NULL,
+  trial smallint NOT NULL,
   list smallint NOT NULL,
   id smallint NOT NULL references stimuli(id),
   cue character varying(12) NOT NULL,
@@ -53,6 +54,7 @@ CREATE TABLE study (
 CREATE TABLE study_practice (
   subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
   session smallint NOT NULL,
+  trial smallint NOT NULL,
   list smallint NOT NULL,
   id smallint NOT NULL references stimuli(id),
   cue character varying(12) NOT NULL,
@@ -66,6 +68,7 @@ CREATE TABLE study_practice (
 CREATE TABLE test_practice (
   subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
   session smallint NOT NULL,
+  trial smallint NOT NULL,
   list smallint NOT NULL,
   id smallint NOT NULL references stimuli(id),
   cue character varying(12) NOT NULL,
@@ -84,6 +87,7 @@ CREATE TABLE test_practice (
 CREATE TABLE final_test (
   subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
   session smallint NOT NULL,
+  trial smallint NOT NULL,
   list smallint NOT NULL,
   id smallint NOT NULL references stimuli(id),
   cue character varying(12) NOT NULL,
