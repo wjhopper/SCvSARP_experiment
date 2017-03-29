@@ -291,8 +291,6 @@ try
                   constants.countdownSpeed,  window, constants);
         studyIndex = study_lists.list == i;
         study_lists.onset(studyIndex) = study(study_lists(studyIndex, :), window, constants);
-% Math Distractor
-        mathDistract(2, window, responseHandler, constants)
 
 % Practice Phase
         % Counterbalance study/test practice order between lists
