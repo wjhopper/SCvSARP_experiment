@@ -17,7 +17,7 @@ rng_state = rng;
 ip = inputParser;
 %#ok<*NVREPL> dont warn about addParamValue
 addParamValue(ip,'email', 'will@fake.com', @validate_email);
-addParamValue(ip,'sessions_completed', 0, @(x) x <= 3);% # sessions must be kept in sync with constants.n_sessions
+addParamValue(ip,'sessions_completed', 0, @(x) x <= 1);% # sessions must be kept in sync with constants.n_sessions
 groups = {'immediate','delay'};
 addParamValue(ip,'group', groups{randsample(length(groups),1)}, @(x) validatestring(x, groups));
 addParamValue(ip,'debugLevel',0, @(x) isnumeric(x) && x >= 0);
@@ -42,17 +42,18 @@ constants.stimDir=fullfile(constants.root_dir,'db');
 constants.savePath=fullfile(constants.root_dir,'data');
 
 %% Set up the experimental design %%
-constants.list_length = 18;
-constants.conditions = {'S', 'T', 'N'};
-constants.n_sessions = 3;
+constants.list_length = 20;
+constants.practice_types = {'S', 'T', 'N'};
+constants.cue_types = {'semantic', 'episodic'};
+constants.n_sessions = 1;
 constants.practiceCountdown = 3;
 constants.finalTestCountdown = 3;
 constants.finalTestBreakCountdown = 10;
 constants.studyNewListCountdown = 3;
-constants.gamebreakCountdown = 5;
-
-assert(mod(constants.list_length, length(constants.conditions)) == 0, ...
-       strcat('List length (', num2str(constants.list_length), ') is not a multiple of 3'));
+constants.n_conditions = 1 + prod([length(constants.cue_types), ...
+                                   length(setdiff(constants.practice_types, 'N'))]);
+assert(mod(constants.list_length, constants.n_conditions) == 0, ...
+       strcat('List length (', num2str(constants.list_length), ') is not a multiple of ', num2str(constants.n_conditions)));
 
 %% Set the font size for dialog boxes
 old_font_size = get(0, 'DefaultUIControlFontSize');

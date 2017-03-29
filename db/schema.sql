@@ -31,6 +31,7 @@ CREATE TABLE lists (
   session smallint NOT NULL,
   list smallint NOT NULL,
   practice character(1) NOT NULL,
+  cue_type character(8) NOT NULL,
   UNIQUE (target, semantic_cue, episodic_cue),
   PRIMARY KEY(subject, id)
 );
