@@ -65,7 +65,7 @@ set(0,'DefaultImageVisible','off')
 % Level 0: normal experiment
 if input.debugLevel >= 0
     constants.screenSize = 'full';
-    constants.cueDur = 3; % Length of time to study each cue-target pair
+    constants.cueDur = 5; % Length of time to study each cue-target pair
     constants.testDur = 10;
     constants.readtime=10;
     constants.countdownSpeed = 1;
