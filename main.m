@@ -239,12 +239,12 @@ practice_lists = [lists(practice_items, :) ...
                         'VariableNames', {'onset', 'cue', 'trial'})];
 
 for i=1:size(practice_lists, 1)
-    if strcmp(practice_lists(i,'cue_type'), 'episodic')
-        c = practice_lists(i,'episodic_cue');
+    if strcmp(practice_lists.cue_type{i}, 'episodic')
+        c = practice_lists.episodic_cue{i};
     else
-        c = practice_lists(i,'semantic_cue');
+        c = practice_lists.semantic_cue{i};
     end
-    practice_lists(i,'cue') = c;
+    practice_lists.cue{i} = c;
 end
 % Drop the episodic_cue and semantic_cue columns, they've been merged to
 % the "cue" column based on trial type.
