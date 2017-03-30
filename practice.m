@@ -1,6 +1,9 @@
-function [test_practice, study_practice] = practice(study_practice, test_practice, first, decisionHandler, inputHandler, window, constants)
+function [test_practice, study_practice] = practice(study_practice, test_practice, decisionHandler, inputHandler, window, constants)
 
-    if strcmp('S', first)
+    assert(all(strcmp(study_practice.practice, 'S')));
+    assert(all(strcmp(test_practice.practice, 'T')));
+    
+    if min(study_practice.trial) < min(test_practice.trial)
         % Study
         countdown('It''s time to restudy words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);

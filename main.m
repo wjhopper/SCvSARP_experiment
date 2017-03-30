@@ -293,21 +293,15 @@ try
         study_lists.onset(studyIndex) = study(study_lists(studyIndex, :), window, constants);
 
 % Practice Phase
-        % Counterbalance study/test practice order between lists
-        if mod(i, 2) == 0
-            first = 'S';
-        else
-            first = 'T';
-        end
         SPindex = study_practice_lists.list == i;
         TPindex = test_practice_lists.list == i;
         [TPdata, SPdata] = practice(study_practice_lists(SPindex,:), test_practice_lists(TPindex, :), ...
-                                   first, decisionHandler, responseHandler, window, constants);
+                                    decisionHandler, responseHandler, window, constants);
         study_practice_lists(SPindex,:) = SPdata;
         test_practice_lists(TPindex, :) = TPdata;
 
 % Math Distractor
-        mathDistract(4, window, responseHandler, constants)
+        mathDistract(3, window, responseHandler, constants)
 
 % Test Phase
         giveInstructions('final',[], responseHandler, window, constants);
