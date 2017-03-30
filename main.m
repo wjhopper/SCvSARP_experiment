@@ -264,8 +264,8 @@ end
 
 % Adjust the trial order variable back to sequential
 x = reshape(bsxfun(@plus, repmat((1:8)',1,6), 16*(0:5)), [], 1);
-restudy_trials = strcmp(practice_lists.practice, 'T');
-test_trials = strcmp(practice_lists.practice, 'S');
+restudy_trials = strcmp(practice_lists.practice, 'S');
+test_trials = strcmp(practice_lists.practice, 'T');
 
 if mod(constants.subject, 2) == 0
     % if the subject number is ever, restudy trials are first
@@ -276,8 +276,9 @@ else
     practice_lists.trial(restudy_trials) = x + 8;
 end
 practice_lists = sortrows(practice_lists, {'list','trial'});
-study_practice_lists = practice_lists(restudy_trials,:);
-test_practice_lists = [practice_lists(test_trials, :), response_schema(sum(test_trials))];
+study_practice_lists = practice_lists(strcmp(practice_lists.practice, 'S'),:);
+test_practice_lists = [practice_lists(strcmp(practice_lists.practice, 'T'), :), ...
+                       response_schema(sum(length(x)))];
 
 final_test_lists.trial = (1:size(final_test_lists, 1))';
 
