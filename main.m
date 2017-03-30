@@ -183,6 +183,7 @@ end
 
 %% Add the fields from input and session to the constants struct
 constants.subject = session.subject;
+constants.group = input.group;
 constants.email = session.email;
 constants.sessions_completed = session.sessions_completed;
 constants.current_session = session.sessions_completed + 1;
@@ -300,21 +301,50 @@ try
         study_practice_lists(SPindex,:) = SPdata;
         test_practice_lists(TPindex, :) = TPdata;
 
-% Math Distractor
-        mathDistract(3, window, responseHandler, constants)
+% If we're in the immediate group, the final test immediately follows
+% practice after the math distractor task
 
-% Test Phase
-        giveInstructions('final',[], responseHandler, window, constants);
-        finalIndex = final_test_lists.list == i;
-        [onset, recalled, latency, resp, FP, LP, adv] = testing(final_test_lists(finalIndex, :), ...
-                                                                decisionHandler, responseHandler, window, constants, '', false);
-        final_test_lists.onset(finalIndex) = onset;
-        final_test_lists.recalled(finalIndex) = recalled;
-        final_test_lists.latency(finalIndex) = latency;
-        final_test_lists.response(finalIndex) = resp;
-        final_test_lists.FP(finalIndex) = FP;
-        final_test_lists.LP(finalIndex) = LP;
-        final_test_lists.advance(finalIndex) = adv;
+        if strcmp(constants.group,'immediate')
+            % Math Distractor
+            mathDistract(3, window, responseHandler, constants)
+
+            % Test Phase
+            giveInstructions('final',[], responseHandler, window, constants);
+            finalIndex = final_test_lists.list == i;
+            [onset, recalled, latency, resp, FP, LP, adv] = testing(final_test_lists(finalIndex, :), ...
+                                                                    decisionHandler, responseHandler, window, constants, '', false);
+            final_test_lists.onset(finalIndex) = onset;
+            final_test_lists.recalled(finalIndex) = recalled;
+            final_test_lists.latency(finalIndex) = latency;
+            final_test_lists.response(finalIndex) = resp;
+            final_test_lists.FP(finalIndex) = FP;
+            final_test_lists.LP(finalIndex) = LP;
+            final_test_lists.advance(finalIndex) = adv;
+        end
+    end
+
+% If we're in the delay group, now we do the final tests
+    if strcmp(constants.group,'delay')
+
+        mathDistract(3, window, responseHandler, constants)
+        % Test Phase
+        for i = unique(final_test_lists.list)'
+
+            giveInstructions('final',[], responseHandler, window, constants);
+            finalIndex = final_test_lists.list == i;
+            [onset, recalled, latency, resp, FP, LP, adv] = testing(final_test_lists(finalIndex, :), ...
+                                                                    decisionHandler, responseHandler, window, constants, '', false);
+            final_test_lists.onset(finalIndex) = onset;
+            final_test_lists.recalled(finalIndex) = recalled;
+            final_test_lists.latency(finalIndex) = latency;
+            final_test_lists.response(finalIndex) = resp;
+            final_test_lists.FP(finalIndex) = FP;
+            final_test_lists.LP(finalIndex) = LP;
+            final_test_lists.advance(finalIndex) = adv;
+
+            countdown('Take a break before continuing your memory test',...
+                       constants.studyNewListCountdown, constants.countdownSpeed, window, constants);
+        end
     end
 
 catch error
