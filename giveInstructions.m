@@ -11,14 +11,18 @@ switch phase_name
                                             {'top','top','top','mug','mug','mug'}', ...
                                             {'S', 'S', 'S', 'S', 'S', 'S'}'], ...
                                            'VariableNames', {'cue','target', 'practice'}),...
-                                array2table(nan(6, 1), 'VariableNames', {'onset'})];
-        study_practice_pairs = study_practice_pairs(randperm(size(study_practice_pairs, 1)),:);           
+                                table(nan(6, 1), 'VariableNames', {'onset'})];
+        study_practice_pairs = study_practice_pairs(randperm(size(study_practice_pairs, 1)),:);
+        study_practice_pairs.trial = (1:size(study_practice_pairs, 1))';
+
         test_practice_pairs = [cell2table([{'raisin','vine','fruit','ant','bug','cricket'}',...
                                            {'grape','grape','grape','insect','insect','insect'}', ...
                                            {'T', 'T', 'T', 'T', 'T', 'T'}'], ...
                                           'VariableNames', {'cue','target', 'practice'}),...
                                response_schema(6)];
         test_practice_pairs = test_practice_pairs(randperm(size(test_practice_pairs, 1)),:);
+        test_practice_pairs.trial = (1:size(test_practice_pairs, 1))';
+        
         final_test_pairs = [study_pairs(randperm(size(study_pairs, 1)), 1:3), ...
                             response_schema(6)];
 
@@ -90,7 +94,7 @@ switch phase_name
         listen(responseHandler, constants, '');
 
         %% Practice block: Practice
-        practice(study_practice_pairs, test_practice_pairs, 'S', decisionHandler, responseHandler, window, constants);        
+        practice(study_practice_pairs, test_practice_pairs, decisionHandler, responseHandler, window, constants);        
 
         %% Screen
         KbQueueCreate;
