@@ -19,7 +19,7 @@ ip = inputParser;
 addParamValue(ip,'email', 'will@fake.com', @validate_email);
 addParamValue(ip,'sessions_completed', 0, @(x) x <= 1);% # sessions must be kept in sync with constants.n_sessions
 groups = {'immediate','delay'};
-addParamValue(ip,'group', groups{randsample(length(groups),1)}, @(x) validatestring(x, groups));
+addParamValue(ip,'group', groups{randsample(length(groups),1)}, @(x) any(strcmpi(x, groups)));
 addParamValue(ip,'debugLevel',0, @(x) isnumeric(x) && x >= 0);
 addParamValue(ip,'robotType', 'Good', @(x) sum(strcmp(x, {'Good','Bad','Chaotic'}))==1)
 parse(ip,varargin{:}); 
