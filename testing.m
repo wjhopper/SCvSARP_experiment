@@ -49,6 +49,15 @@ lastPress = nan(size(data,1),1);
 advance = zeros(size(data,1),1); % Enter key sets this to the time it was pressesed, which breaks the while loop
 response = cell(size(data,1),1);
 
+if any(strcmp('cue_type',data.Properties.VariableNames));
+    colors = nan(size(data,1),3);
+    episodic_rows = strcmp('episodic', data.cue_type);
+    colors(episodic_rows,:) = repmat([204, 0, 0], sum(episodic_rows), 1); % red
+    semantic_rows = strcmp('semantic', data.cue_type);
+    colors(semantic_rows,:) = repmat([0, 102, 0], sum(semantic_rows), 1); % green
+else
+    colors = nan(size(data,1),1);
+end
 for j = 1:size(data,1)
     postpone = 0; % Don't postpone response deadline until the subject interacts
     string = ''; % Start with an empty response string for each target
@@ -62,7 +71,7 @@ for j = 1:size(data,1)
     else
         prompt = '?';
     end
-    drawCueTarget(data.cue{j}, prompt, window, constants); % Draw cue and prompt
+    drawCueTarget(data.cue{j}, prompt, window, constants, colors(j,:)); % Draw cue and prompt
     DrawFormattedText(window, 'Z = Don''t Remember', constants.winRect(3)*.1, constants.winRect(4)*.9);
     DrawFormattedText(window, 'M = Remember', 'right', constants.winRect(4)*.9, ...
                       [],[],[],[],[],[],[0 0 constants.winRect(3)*.9, constants.winRect(4)]); 
@@ -81,7 +90,7 @@ for j = 1:size(data,1)
     
     if recalled(j)
         keys_pressed = []; %#ok<NASGU>
-        drawCueTarget(data.cue{j}, prompt, window, constants); % Draw cue and prompt
+        drawCueTarget(data.cue{j}, prompt, window, constants, colors(j,:)); % Draw cue and prompt
         vbl = Screen('Flip', window, vbl + (latency(j)-vbl) + constants.ifi/2); % Display cue and prompt
         setupTestKBQueue;        
         KbQueueStart;
@@ -130,7 +139,7 @@ for j = 1:size(data,1)
             else
                 prompt = string;
             end
-            drawCueTarget(data.cue{j}, prompt, window, constants);
+            drawCueTarget(data.cue{j}, prompt, window, constants,  colors(j,:));
             vbl = Screen('Flip', window, vbl + (press_times(i) - vbl) + constants.ifi);
             postpone = postpone + 1;
         end

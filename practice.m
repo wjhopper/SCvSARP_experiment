@@ -7,7 +7,7 @@ function [test_practice, study_practice] = practice(study_practice, test_practic
         % Study
         countdown('It''s time to restudy words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        study_practice.onset = study(study_practice(:, {'cue','target'}), window, constants);
+        study_practice.onset = study(study_practice, window, constants);
         % Then retest
         countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);    
@@ -20,7 +20,7 @@ function [test_practice, study_practice] = practice(study_practice, test_practic
         % Then Restudy
         countdown('It''s time to restudy some words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        study_practice.onset = study(study_practice(:, {'cue','target'}), window, constants);
+        study_practice.onset = study(study_practice, window, constants);
     end
 
     test_practice.onset = onset;
