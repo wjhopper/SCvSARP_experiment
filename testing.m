@@ -63,9 +63,7 @@ for j = 1:size(data,1)
     string = ''; % Start with an empty response string for each target
     rt = []; % Start with an empty RT vector for each target
     setupDecisionKBQueue;
-    if ~isempty(message)
-        DrawFormattedText(window, message, constants.leftMargin, constants.winRect(4)*.15, [], 40, [],[],1.5);
-    end
+
     if first_letter
         prompt = [data.target{j}(1) '______ ?'];
     else
@@ -90,6 +88,9 @@ for j = 1:size(data,1)
     
     if recalled(j)
         keys_pressed = []; %#ok<NASGU>
+        if ~isempty(message)
+            DrawFormattedText(window, message, 'center', constants.winRect(4)*.15, [], 40, [],[],1.5);
+        end        
         drawCueTarget(data.cue{j}, prompt, window, constants, colors(j,:)); % Draw cue and prompt
         vbl = Screen('Flip', window, vbl + (latency(j)-vbl) + constants.ifi/2); % Display cue and prompt
         setupTestKBQueue;        
@@ -132,7 +133,7 @@ for j = 1:size(data,1)
             end
             
             if ~isempty(message)
-                DrawFormattedText(window, message, constants.leftMargin, constants.winRect(4)*.15, [], 40, [],[],1.5);
+                DrawFormattedText(window, message, 'center', constants.winRect(4)*.15, [], 40, [],[],1.5);
             end
             if first_letter
                 prompt = [data.target{j}(1) string];

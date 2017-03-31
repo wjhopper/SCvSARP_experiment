@@ -139,7 +139,7 @@ switch phase_name
         %% Test
         countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        testing(test_practice_pairs, decisionHandler, responseHandler, window, constants, '', false);
+        testing(test_practice_pairs, decisionHandler, responseHandler, window, constants, 'Type in the word you remember', false);
 
         %% Screen
         KbQueueCreate;
