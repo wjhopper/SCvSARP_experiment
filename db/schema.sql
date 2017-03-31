@@ -13,7 +13,7 @@ CREATE TABLE participants (
 
 CREATE TABLE stimuli (
   id smallserial UNIQUE NOT NULL,
-  target character varying(12) NOT NULL,
+  target character varying(12) UNIQUE NOT NULL,
   semantic_cue character varying(12) UNIQUE NOT NULL,
   episodic_cue character varying(12) UNIQUE NOT NULL,
   PRIMARY KEY(target)
@@ -32,7 +32,7 @@ CREATE TABLE lists (
   list smallint NOT NULL,
   practice character(1) NOT NULL,
   cue_type character(8) NOT NULL,
-  UNIQUE (target, semantic_cue, episodic_cue),
+  UNIQUE (subject, target, semantic_cue, episodic_cue),
   PRIMARY KEY(subject, id)
 );
 
@@ -48,7 +48,7 @@ CREATE TABLE study (
   target character varying(12) NOT NULL,
   onset double precision NOT NULL,
   PRIMARY KEY(subject, id),
-  UNIQUE (cue, target)
+  UNIQUE (subject, cue, target)
 );
 
 CREATE TABLE study_practice (
@@ -61,9 +61,8 @@ CREATE TABLE study_practice (
   target character varying(12) NOT NULL,
   onset double precision NOT NULL,
   PRIMARY KEY(subject, id),
-  UNIQUE (cue, target)
+  UNIQUE (subject, cue, target)
 );
-
 
 CREATE TABLE test_practice (
   subject smallint NOT NULL references participants(subject) ON DELETE CASCADE,
@@ -81,7 +80,7 @@ CREATE TABLE test_practice (
   advance double precision,
   response character varying(20),
   PRIMARY KEY(subject, id),
-  UNIQUE (cue, target)
+  UNIQUE (subject, cue, target)
 );
 
 CREATE TABLE final_test (
@@ -100,7 +99,7 @@ CREATE TABLE final_test (
   advance double precision,
   response character varying(20),
   PRIMARY KEY(subject, id),
-  UNIQUE (cue, target)
+  UNIQUE (subject, cue, target)
 );
 
 CREATE ROLE will LOGIN;
