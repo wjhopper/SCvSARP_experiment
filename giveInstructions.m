@@ -136,10 +136,10 @@ switch phase_name
         drawInstructions(text, 'any key', 0, window, constants);
         listen(responseHandler, constants, '');
 
-        %% Test        
+        %% Test
         countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
                   constants.countdownSpeed,  window, constants);
-        testing(test_practice_pairs, decisionHandler, responseHandler, window, constants, '', true);              
+        testing(test_practice_pairs, decisionHandler, responseHandler, window, constants, '', false);
 
         %% Screen
         KbQueueCreate;
