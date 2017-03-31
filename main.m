@@ -48,7 +48,7 @@ constants.cue_types = {'semantic', 'episodic'};
 constants.n_sessions = 1;
 constants.practiceCountdown = 3;
 constants.finalTestCountdown = 3;
-constants.finalTestBreakCountdown = 10;
+constants.finalTestBreak = 30;
 constants.studyNewListCountdown = 3;
 constants.n_conditions = 1 + prod([length(constants.cue_types), ...
                                    length(setdiff(constants.practice_types, 'N'))]);
@@ -344,7 +344,7 @@ try
             final_test_lists.advance(finalIndex) = adv;
 
             countdown('Take a break before continuing your memory test',...
-                       constants.studyNewListCountdown, constants.countdownSpeed, window, constants);
+                       constants.finalTestBreak, constants.countdownSpeed, window, constants);
         end
     end
 
