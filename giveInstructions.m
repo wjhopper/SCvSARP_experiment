@@ -34,23 +34,15 @@ switch phase_name
         %% Screen        
         KbQueueCreate;        
         text = ['Welcome to the experiment!' ...
-                '\n\nIn this experiment, you will be shown pairs of words.' ...
-                '\nYour task is to learn these pairs, so that you will be able to remember them later on a test.'];
+                '\n\nIn this experiment, you will be shown pairs of words. Your task is to learn these pairs, so that you will be able to remember them later on a test' ...
+                '\n\nEach pair will have one word on the left, and one word on the right. The word on the right is the one you need to remember for the tests.'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
         listen(responseHandler, constants, '');
 
         %% Screen
-        text = ['The pairs you study will be grouped into "lists" of ', num2str(constants.list_length), ' pairs, and you will study the pairs one at a time.', ...
-                '\n\nEach pair will have one word on the left, and the other word on the right.', ...
-                '\n\nThe word on the right is the one you need to remember for the tests.'];
-        drawInstructions(text, 'any key', constants.readtime, window, constants);
-        listen(responseHandler, constants, '');
-
-        %% Screen
-        text = ['Use the word on the left to help you remember the word on the right. For example, if you studied the list:', ...
-                '\n\n                  library - OVAL', ...
-                '\n\n                  foam - CAMERA', ...
-                '\n\nyou could imagine an oval shaped library and a picture of some bread to help your memory.'];
+        text = ['Use the word on the left to help you remember the word on the right. For example, if you studied the pair:', ...
+                '\n\n                               library - OVAL', ...
+                '\n\nyou could imagine an oval shaped library to help your memory.'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
         listen(responseHandler, constants, '');
 
@@ -63,51 +55,100 @@ switch phase_name
         %% Practice block: Study 
         countdown('It''s time to study a new list of pairs', constants.studyNewListCountdown, ...
                   constants.countdownSpeed,  window, constants);
-        study(study_pairs, window, constants);        
+        study(study_pairs, window, constants);
 
         %% Screen
-        text = ['After you study each list of pairs, there will be a brief delay, followed by more practice to help your memory.',...
-                '\n\nDuring the practice, the words on the left will be ones related to the words on the right you need to remember.',...
-                '\n\nYou will practice remembering the words in two ways: by restudying, and by taking practice tests'];
-        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        current_color = Screen('TextColor', window);
+        text = ['After you study each list, you will receive additional practice to help your memory. In this practice phase, you will again be shown word pairs.',...
+                '\n\nThe words on the right side will be the same words you just studied, but sometimes the word on the left side of the pair will be different than when you first studied each pair.'];
+        drawInstructions(text, 'any key', constants.readtime*.5, window, constants);
+        listen(responseHandler, constants, '');
+
+        %% Screen                
+        text = 'New words will be similar or related to the one on the right that you need to remember. These kinds of words will be\nshown in ';
+        [nx, ny] = DrawFormattedText(window, text, constants.leftMargin, constants.winRect(4)*.3, [], constants.wrapat,[],[],1.5);
+        [~, ny] = DrawFormattedText(window, 'green text.', nx, ny, [0, 102, 0], constants.wrapat ,[],[],1.5);
+        text = 'Other word pairs  will have the same word on the left side as when you first studied them. Words that are the same will be shown in ';
+        [nx, ny] = DrawFormattedText(window, text, constants.leftMargin, ny + 3*Screen('TextSize', window),...
+                                     current_color, constants.wrapat, [], [], 1.5);
+        DrawFormattedText(window, 'red text.', nx, ny, [204, 0, 0], constants.wrapat,[],[],1.5);
+        vbl = Screen('Flip',window,[],1);
+
+        DrawFormattedText(window, 'Press any key to continue', 'center', constants.winRect(4)*.9, current_color, constants.wrapat, [],[], 1.5);
+        Screen('Flip',window, vbl + constants.readtime - (constants.ifi/2));
         listen(responseHandler, constants, '');
 
         %% Screen
-        text = ['When you restudy, you will be shown a word you need to remember together with a related word. You will restudy each word 3 times, with a different related word each time'....
-                '\n\nFor example, if you were restudying to help you remember the word "oval", you might see the pairs "circle - OVAL", "round - OVAL", and "shape - OVAL".'];
-        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        text = ['You will practice remembering some words by restudying them.', ...
+                '\n\nFor example, if you were restudying the word "OVAL", you might study "'];
+        [nx, ny] = DrawFormattedText(window, text, constants.leftMargin, constants.winRect(4)*.3, [], ...
+                                    constants.wrapat, [], [], 1.5);
+        [nx, ny] = DrawFormattedText(window, 'library', nx, ny, [204, 0, 0], constants.wrapat,[],[],1.5);
+        [~, ny] = DrawFormattedText(window, ' - OVAL" (the same pair you previously studied).', nx, ny, current_color,...
+                                    constants.wrapat, [], [], 1.5);
+        [nx, ny] = DrawFormattedText(window, 'Or, you might study "', constants.leftMargin, ny+3*Screen('TextSize', window), current_color,...
+                                    constants.wrapat, [], [], 1.5); 
+        [nx, ny] = DrawFormattedText(window, 'circle', nx, ny, [0, 102, 0], constants.wrapat,[],[],1.5);                                
+        DrawFormattedText(window, ' - OVAL" ("circle" is a new word related to "OVAL").', nx, ny, current_color,...
+                          constants.wrapat, [], [], 1.5);
+        DrawFormattedText(window, 'Press any key to continue', 'center', constants.winRect(4)*.9, current_color, constants.wrapat, [],[], 1.5);
+        Screen('Flip',window, vbl + constants.readtime - (constants.ifi/2));
         listen(responseHandler, constants, '');
 
         %% Screen
-        text = ['On the practice test, you will only be shown the first letter of word you need to remember. Use the related word on the left to help you remember it.',...
-                '\n\nFor example, if you were taking a practice test to help you remember the word "camera", you might ',...
-                'be prompted to recall "camera" with "film - C____ ?", "flash - C____ ?" and "video - C____ ?".'];
-        drawInstructions(text, 'any key', constants.readtime, window, constants);
+        text = 'Here''s a short example of what the restudying will be like.';
+        drawInstructions(text, 'any key', 0, window, constants);
+        listen(responseHandler, constants, '');
+
+        %% Restudy 
+        countdown('It''s time to restudy words from the last list', constants.practiceCountdown,...
+                  constants.countdownSpeed,  window, constants);
+        study(study_practice_pairs, window, constants);
+
+        %% Screen
+        text = ['You will practice remembering other words by taking a practice test.',...
+                '\n\nOn the practice test, you will be shown a word on the left, and a blank on the right. Use the word on the left to help you remember the correct word.',...
+                '\n\nFor example, if you were taking a practice test to help you remember the word "OVAL", you might be tested with "'];
+        [~, ny] = DrawFormattedText(window, text, constants.leftMargin, constants.winRect(4)*.2, [], ...
+                                    constants.wrapat, [], [], 1.5);
+        [nx, ny] = DrawFormattedText(window, 'library', constants.leftMargin, ny+1.5*Screen('TextSize', window), [204, 0, 0],...
+                                     constants.wrapat, [], [], 1.5);
+        [~, ny] = DrawFormattedText(window, ' - ____?" (the word you studied with "OVAL"), or you might', nx, ny, current_color,...
+                                    constants.wrapat, [], [], 1.5);
+        [nx, ny] = DrawFormattedText(window, 'be tested with "', constants.leftMargin, ny+1.5*Screen('TextSize', window), current_color,...
+                                    constants.wrapat, [], [] ,1.5);
+        [nx, ny] = DrawFormattedText(window, 'circle', nx, ny, [0, 102, 0], constants.wrapat,[],[],1.5);                                
+        DrawFormattedText(window, ' - ____?" (a word that is related to "OVAL").', nx, ny, current_color,...
+                          constants.wrapat, [], [], 1.5);
+        DrawFormattedText(window, 'Press any key to continue', 'center', constants.winRect(4)*.9, current_color, constants.wrapat, [],[], 1.5);
+        Screen('Flip',window, vbl + constants.readtime - (constants.ifi/2));
         listen(responseHandler, constants, '');
 
         %% Screen
         text = ['During the test, press the ''z'' key if you don''t remember the missing word, and press the ''m'' key if you do '...
-                '\n\nIf you press ''m'', you must then type it the answer. When you finish typing, press Enter to continue to the next pair.', ...
+                '\n\nIf you press ''m'', you must then type in the answer. When you finish typing, press Enter to continue to the next pair.', ...
                 '\n\nIf you do not press ''z'' or ''m'', the test will automatically continue after 10 seconds.'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
         listen(responseHandler, constants, '');
-
+        
         %% Screen
-        text = ['Here''s a short example of what the practice will be like.' ...
-                '\n\nThe words you''re practicing are from the short list you saw earlier'];
+        text = 'Here''s a short example of what the test practice will be like.';
         drawInstructions(text, 'any key', 0, window, constants);
         listen(responseHandler, constants, '');
 
-        %% Practice block: Practice
-        practice(study_practice_pairs, test_practice_pairs, decisionHandler, responseHandler, window, constants);        
+        %% Test        
+        countdown('Time for a practice test on words from the last list', constants.practiceCountdown,...
+                  constants.countdownSpeed,  window, constants);
+        testing(test_practice_pairs, decisionHandler, responseHandler, window, constants, '', true);              
 
         %% Screen
         KbQueueCreate;
-        text = ['After the practice phase, there will be another brief delay, followed by a final memory test.',...
-                '\n\nOn this test, you will be prompted using the left-hand side words from the original study list (not the related words from the practice phase).', ...
-                '\n\nFor example, you would be prompted with "library - ?" and "foam - ?" to recall "oval" and "camera".'];
+        text = ['After the practice phase, there will be a brief delay, followed by a final memory test.',...
+                '\n\nOn this test, you will be prompted using the left-hand side words from the from the very first time you studied the word pairs (not the related words from the practice phase).', ...
+                '\n\nFor example, you would be prompted with "library - ____?" "oval".', ...
+                '\n\nAll the words will have black text during the final test'];
         drawInstructions(text, 'any key', constants.readtime, window, constants);
-        listen(responseHandler, constants, '');     
+        listen(responseHandler, constants, '');
 
         %% Screen
         text = 'Let''s take a final test on the short list you just practiced.';
@@ -118,7 +159,7 @@ switch phase_name
         giveInstructions('final', decisionHandler, responseHandler, window, constants);
         [On, recall, latency, resp, FP, LP, adv] = testing(final_test_pairs, decisionHandler, responseHandler, window, constants, '',false);
         final_test_pairs(:,{'onset','recalled','latency','FP','LP','response','advance'}) = table(On,recall,latency,FP,LP,resp,adv);
-        
+
         assert(all(final_test_pairs.FP(~isnan(final_test_pairs.FP)) - final_test_pairs.onset(~isnan(final_test_pairs.FP)) > 0), ...
                'First Press times less than onset times - this should be impossible!')        
         assert(all(final_test_pairs.LP(~isnan(final_test_pairs.LP)) - final_test_pairs.FP(~isnan(final_test_pairs.LP)) > 0), ...
@@ -142,8 +183,7 @@ switch phase_name
         Screen('Flip',window,[],1);
 
     case 'final'
-        text = ['It''s time for the final test on this list of pairs.',...
-                '\n\nThe final test will begin in'];
+        text = 'It''s time for the final test! The test will begin in:';
         countdown(text, constants.finalTestCountdown, constants.countdownSpeed, window, constants)
 
     case 'resume'
